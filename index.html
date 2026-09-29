@@ -57,7 +57,9 @@ a{color:inherit}
 [hidden]{display:none!important}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
 .num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
-svg{flex-shrink:0}
+svg{flex-shrink:0;display:block}
+/* O ícone mora num <span>; inline, ele alinhava pela linha de base do texto e subia no botão. */
+span[data-ic]{display:inline-flex;align-items:center;justify-content:center;line-height:0}
 
 /* ── App shell ── */
 .layout{display:flex;min-height:100vh}
@@ -285,7 +287,9 @@ textarea.inp{height:auto;min-height:150px;padding:.65rem .8rem;resize:vertical;l
 
 /* ── Modal ── */
 .modal{position:fixed;inset:0;display:grid;place-items:center;z-index:70;padding:16px}
-.modal-box{width:min(480px,100%);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);animation:sobe .25s var(--ease) both;position:relative}
+/* Dentro da janela o véu fica ATRÁS da caixa; com z-index próprio ele cobria o formulário e bloqueava os cliques. */
+.modal>.scrim{z-index:0}
+.modal-box{z-index:1;width:min(480px,100%);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);animation:sobe .25s var(--ease) both;position:relative}
 @keyframes sobe{from{transform:translateY(10px) scale(.98);opacity:0}}
 .modal-box header{padding:1.2rem 1.4rem .2rem}
 .modal-box header h2{font-family:var(--f-title);font-size:1.15rem;font-weight:600}
@@ -639,7 +643,6 @@ function renderStatus(){
   $('#whoName').textContent=S.conn?S.conn.nome:'Não conectado';
   $('#whoSub').textContent=!S.conn?'Clique para conectar':S.busy?'Sincronizando…':S.err?'Sem conexão com a planilha':'Sincronizado às '+(S.lastSync?pad(S.lastSync.getHours())+':'+pad(S.lastSync.getMinutes()):'—');
   const r=$('#btnReload');r.disabled=!S.conn||!!S.busy;r.classList.toggle('spin',!!S.busy);
-  $('#btnNovo').disabled=!canWrite();
 }
 function renderNav(){
   const n=S.loaded?periodEntries(periodOf(todayISO())).filter(e=>e.conf==='pendente').length:0;
