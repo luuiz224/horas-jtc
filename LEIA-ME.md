@@ -52,6 +52,11 @@ São 39 lançamentos de 01/07 a 24/09 consolidados das várias versões das plan
 4. **Marcar como enviada**: horas, datas e exclusões daquela quinzena ficam travadas.
    Se precisar corrigir, **Reabrir quinzena**. Fica registrado quem reabriu e o que mudou depois do envio.
 
+**Relatórios** (barra lateral): escolha o período por atalho (quinzena atual, este mês, mês passado, últimos 3 meses, este ano, tudo)
+ou pelas datas De/Até, filtre por quinzenas enviadas/abertas e por serviço. Mostra faturamento, horas, dias trabalhados,
+quanto já foi enviado à JTC, totais por mês, por serviço e por quinzena, e baixa o XLSX do período no modelo JTC.
+O valor usa o valor da hora atual da Configuração.
+
 Atalhos: `N` novo lançamento, `←`/`→` troca de quinzena, `Esc` fecha o painel. Tema claro/escuro no botão da barra de cima ou em Configuração.
 
 Quinzenas: 1ª = dias 01–15, 2ª = dia 16 até o fim do mês, sempre pela data do lançamento.

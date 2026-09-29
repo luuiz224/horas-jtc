@@ -301,6 +301,23 @@ textarea.inp{height:auto;min-height:150px;padding:.65rem .8rem;resize:vertical;l
 .timeline li:first-child::before{border-color:var(--accent)}
 .timeline .when{display:block;font-family:var(--f-mono);font-size:.72rem;color:var(--text-muted)}
 
+/* ── Relatórios ── */
+.rel-filtros{display:flex;flex-direction:column;gap:1rem}
+.rel-atalhos{flex-wrap:wrap;align-self:flex-start}
+.rel-linha{display:grid;grid-template-columns:170px 170px auto minmax(180px,1fr);gap:.9rem;align-items:end}
+.rel-linha .seg{height:var(--control-h);align-items:center}
+.rel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem}
+.hbars{display:flex;flex-direction:column;gap:.55rem}
+.hbar{display:grid;grid-template-columns:minmax(90px,34%) minmax(0,1fr) 54px 92px;gap:.7rem;align-items:center;font-size:.83rem;padding:.2rem .3rem;margin:0 -.3rem;border-radius:6px}
+.hbar:hover{background:var(--surface-hover)}
+.hbar-nome{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-soft)}
+.hbar-trilho{height:12px;display:flex}
+.hbar-fill{display:block;height:100%;background:var(--accent);border-radius:0 4px 4px 0;transform-origin:left;animation:crescer .6s var(--ease) both}
+.hbar-h{text-align:right;font-weight:500}
+.hbar-v{text-align:right;color:var(--text-muted)}
+tfoot td{font-weight:600;background:var(--surface-2);border-top:1px solid var(--border-strong);border-bottom:0}
+tfoot td.n{font-family:var(--f-mono)}
+
 /* ── Colar da IA ── */
 .passo{display:flex;gap:.85rem;align-items:flex-start}
 .passo b{display:block;font-size:.9rem;font-weight:600;margin-bottom:.15rem}
@@ -333,6 +350,8 @@ textarea.inp{height:auto;min-height:150px;padding:.65rem .8rem;resize:vertical;l
 
 /* ── Celular ── */
 @media (max-width:900px){
+  .rel-linha{grid-template-columns:1fr 1fr}
+  .rel-grid{grid-template-columns:1fr}
   .sidebar{position:fixed;left:0;top:0;z-index:55;transform:translateX(-100%);transition:transform .25s var(--ease);box-shadow:var(--shadow-lg)}
   .sidebar.aberta{transform:none}
   .menu-btn{display:grid}
@@ -342,6 +361,9 @@ textarea.inp{height:auto;min-height:150px;padding:.65rem .8rem;resize:vertical;l
   .busca{flex:1 1 160px}
 }
 @media (max-width:640px){
+  .rel-linha,.rel-grid{grid-template-columns:1fr}
+  .hbar{grid-template-columns:minmax(0,1fr) 50px 84px}
+  .hbar-trilho{grid-column:1/-1;grid-row:2}
   .p-title{font-size:1.3rem}
   .p-acts{width:100%}
   .p-acts .btn{flex:1 1 auto}
@@ -370,6 +392,7 @@ textarea.inp{height:auto;min-height:150px;padding:.65rem .8rem;resize:vertical;l
       <nav class="side-nav">
         <a class="nav-link" href="#lancamentos" data-view="lancamentos"><span data-ic="list" data-sz="17"></span>Lançamentos<span class="nav-count" id="navPend" hidden></span></a>
         <a class="nav-link" href="#quinzenas" data-view="quinzenas"><span data-ic="calendar" data-sz="17"></span>Todas as quinzenas</a>
+        <a class="nav-link" href="#relatorios" data-view="relatorios"><span data-ic="chart" data-sz="17"></span>Relatórios</a>
       </nav>
     </div>
     <div class="side-sec">
@@ -452,6 +475,34 @@ textarea.inp{height:auto;min-height:150px;padding:.65rem .8rem;resize:vertical;l
           <div class="frame-head"><div class="frame-titulo"><span data-ic="calendar"></span>Todas as quinzenas <small>· clique para abrir</small></div></div>
           <div class="frame-corpo flush"><div class="tbl-wrap"><table id="overview"></table></div></div>
         </section>
+      </section>
+
+      <!-- ───────── Relatórios ───────── -->
+      <section id="v-relatorios" hidden style="display:contents">
+        <div class="p-head">
+          <div><div class="p-eyebrow">Relatório do período</div><div class="p-title" id="relTitulo">—</div></div>
+          <div class="p-acts">
+            <button class="btn" id="btnRelCopy"><span data-ic="copy" data-sz="15"></span>Copiar</button>
+            <button class="btn" id="btnRelXlsx" title="Todos os lançamentos do período no modelo da JTC"><span data-ic="download" data-sz="15"></span>Baixar XLSX do período</button>
+          </div>
+        </div>
+        <section class="frame">
+          <div class="frame-head"><div class="frame-titulo"><span data-ic="sliders"></span>Filtros</div></div>
+          <div class="frame-corpo rel-filtros">
+            <div class="seg rel-atalhos" id="relAtalhos"></div>
+            <div class="rel-linha">
+              <label class="campo"><span>De</span><input class="inp" type="date" id="relDe"></label>
+              <label class="campo"><span>Até</span><input class="inp" type="date" id="relAte"></label>
+              <div class="campo"><span>Quinzenas</span><div class="seg" id="relSit"><button data-sit="todas">Todas</button><button data-sit="enviadas">Enviadas</button><button data-sit="abertas">Abertas</button></div></div>
+              <label class="campo rel-busca"><span>Serviço ou texto</span><input class="inp" id="relBusca" type="search" placeholder="Ex.: SFTP, pedido 1992074" autocomplete="off"></label>
+            </div>
+          </div>
+        </section>
+        <section class="frame">
+          <div class="frame-head"><div class="frame-titulo"><span data-ic="wallet"></span>Resumo do período</div></div>
+          <div class="frame-grade" id="relKpis"></div>
+        </section>
+        <div id="relCorpo" style="display:contents"></div>
       </section>
 
       <!-- ───────── Configuração ───────── -->
@@ -660,11 +711,11 @@ const canWrite=()=>!!S.conn&&S.loaded;
 const entry=id=>S.entries.find(x=>x.id===id);
 
 /* ---------- navegação ---------- */
-const TITULOS={lancamentos:'Lançamentos',quinzenas:'Todas as quinzenas',config:'Configuração'};
+const TITULOS={lancamentos:'Lançamentos',quinzenas:'Todas as quinzenas',relatorios:'Relatórios',config:'Configuração'};
 function irPara(v){
   S.view=TITULOS[v]?v:'lancamentos';
   $$('.nav-link').forEach(a=>a.classList.toggle('active',a.dataset.view===S.view));
-  ['lancamentos','quinzenas','config'].forEach(k=>{$('#v-'+k).hidden=k!==S.view;});
+  ['lancamentos','quinzenas','relatorios','config'].forEach(k=>{$('#v-'+k).hidden=k!==S.view;});
   $('#viewTitle').textContent=TITULOS[S.view];
   menu(false);renderAll();
 }
@@ -674,7 +725,7 @@ $('#btnMenu').addEventListener('click',()=>menu(true));
 $('#sideScrim').addEventListener('click',()=>menu(false));
 
 /* ---------- render ---------- */
-function renderAll(){renderStatus();renderBanners();if(S.view==='lancamentos')renderQuinzena();if(S.view==='quinzenas')renderOverview();if(S.view==='config')renderCfg();renderNav();renderDrawer();}
+function renderAll(){renderStatus();renderBanners();if(S.view==='lancamentos')renderQuinzena();if(S.view==='quinzenas')renderOverview();if(S.view==='relatorios')renderRel();if(S.view==='config')renderCfg();renderNav();renderDrawer();}
 function renderStatus(){
   const dot=$('#dot');dot.className='dot '+(S.busy?'busy':S.err?'off':S.loaded?'on':'');
   $('#avatar').firstChild.textContent=S.conn?S.conn.nome.trim().charAt(0).toUpperCase():'?';
@@ -1001,10 +1052,10 @@ function linhaJTC(e,r){
   return '<row r="'+r+'" spans="1:6" ht="'+alturaLinha(e)+'" customHeight="1">'+num('A',8,excelSerial(e.data))+num('B',19,Math.round(e.min/60*100)/100)+
     txt('C',21,e.servico)+txt('D',20,e.descricao)+txt('E',3,e.status)+txt('F',2,e.solicitante)+'</row>';
 }
-$('#btnXlsx').addEventListener('click',async()=>{
+$('#btnXlsx').addEventListener('click',()=>baixarXlsx(periodEntries(S.period),fileBase()));
+async function baixarXlsx(list,nome){
   if(typeof JSZip==='undefined'){toast('A biblioteca de planilha não carregou. Use "Copiar".','alert');return;}
-  const list=periodEntries(S.period);
-  if(!list.length){toast('Nenhum lançamento nesta quinzena.');return;}
+  if(!list.length){toast('Nenhum lançamento para exportar.');return;}
   try{
     const zip=await JSZip.loadAsync(MOLDE_JTC,{base64:true}),f='xl/worksheets/sheet1.xml';
     const sh=(await zip.file(f).async('string'))
@@ -1012,11 +1063,11 @@ $('#btnXlsx').addEventListener('click',async()=>{
       .replace('</sheetData>',list.map((e,i)=>linhaJTC(e,i+2)).join('')+'</sheetData>');
     zip.file(f,sh);
     const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fileBase()+'.xlsx';document.body.appendChild(a);a.click();
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nome+'.xlsx';document.body.appendChild(a);a.click();
     setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
     toast('Planilha gerada no modelo JTC','download');
   }catch(err){toast('Não consegui gerar o XLSX. Use "Copiar".','alert');}
-});
+}
 
 /* ---------- configuração ---------- */
 $('#cfgForm').addEventListener('submit',async ev=>{
@@ -1211,6 +1262,89 @@ document.addEventListener('paste',ev=>{
   const t=ev.clipboardData?ev.clipboardData.getData('text'):'';
   if(/LAN[ÇC]AMENTO\s+JTC/i.test(t)){ev.preventDefault();abrirImport(t);}
 });
+
+/* ---------- relatórios ----------
+   Período livre (atalhos ou datas), filtro por situação da quinzena e por serviço.
+   O valor usa o valor da hora atual da Configuração. */
+function hojeMais(dias){const d=new Date();d.setDate(d.getDate()+dias);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function atalhoRel(k){
+  const t=parts(todayISO()),iso=(y,m,d)=>y+'-'+pad(m)+'-'+pad(d);
+  if(k==='quinzena'){const r=periodRange(periodOf(todayISO()));return [iso(r.y,r.m,r.a),iso(r.y,r.m,r.b)];}
+  if(k==='mes')return [iso(t.y,t.m,1),iso(t.y,t.m,lastDay(t.y,t.m))];
+  if(k==='mesPassado'){const y=t.m===1?t.y-1:t.y,m=t.m===1?12:t.m-1;return [iso(y,m,1),iso(y,m,lastDay(y,m))];}
+  if(k==='3meses'){let y=t.y,m=t.m-2;if(m<1){m+=12;y--;}return [iso(y,m,1),iso(t.y,t.m,lastDay(t.y,t.m))];}
+  if(k==='ano')return [iso(t.y,1,1),iso(t.y,12,31)];
+  if(k==='tudo'){const ds=S.entries.map(e=>e.data).sort();return [ds[0]||todayISO(),ds[ds.length-1]||todayISO()];}
+  return null;
+}
+const ATALHOS=[['quinzena','Quinzena atual'],['mes','Este mês'],['mesPassado','Mês passado'],['3meses','Últimos 3 meses'],['ano','Este ano'],['tudo','Tudo']];
+S.rel={atalho:'mes',de:'',ate:'',sit:'todas',busca:''};
+(function(){const r=atalhoRel('mes');S.rel.de=r[0];S.rel.ate=r[1];})();
+function fmtDataLonga(iso){const p=parts(iso);return pad(p.d)+'/'+pad(p.m)+'/'+p.y;}
+function relEntries(){
+  const {de,ate,sit,busca}=S.rel,q=norm(busca);
+  return S.entries.filter(e=>!e.excluido&&e.data>=de&&e.data<=ate&&
+    (sit==='todas'||(sit==='enviadas')===isLocked(periodOf(e.data)))&&
+    (!q||norm(e.servico+' '+e.descricao).includes(q))).sort((a,b)=>a.data<b.data?-1:a.data>b.data?1:0);
+}
+function barras(linhas,vh,rotulo){
+  // Barras horizontais de uma série só: a cor é o acento; valores em texto normal ao lado.
+  const max=Math.max(...linhas.map(l=>l.min),1);
+  return '<div class="hbars">'+linhas.map(l=>
+    '<div class="hbar" title="'+esc(l.nome+' · '+fmtHM(l.min)+' · '+fmtBRL(l.min/60*vh)+' · '+l.n+' lançamento'+(l.n===1?'':'s'))+'">'+
+      '<span class="hbar-nome">'+esc(l.nome)+'</span>'+
+      '<span class="hbar-trilho"><span class="hbar-fill" style="width:'+Math.max(l.min/max*100,1.5).toFixed(1)+'%"></span></span>'+
+      '<span class="hbar-h num">'+fmtHM(l.min)+'</span><span class="hbar-v num">'+esc(fmtBRL(l.min/60*vh))+'</span></div>').join('')+'</div>';
+}
+function renderRel(){
+  const R=S.rel,vh=Number(S.cfg.valorHora)||0;
+  $('#relAtalhos').innerHTML=ATALHOS.map(([k,l])=>'<button data-at="'+k+'" class="'+(R.atalho===k?'on':'')+'">'+l+'</button>').join('');
+  if(document.activeElement!==$('#relDe'))$('#relDe').value=R.de;
+  if(document.activeElement!==$('#relAte'))$('#relAte').value=R.ate;
+  $$('#relSit button').forEach(b=>b.classList.toggle('on',b.dataset.sit===R.sit));
+  $('#relTitulo').textContent=fmtDataLonga(R.de)+' a '+fmtDataLonga(R.ate);
+  const l=relEntries(),tot=sumMin(l),dias=new Set(l.map(e=>e.data)).size;
+  $('#btnRelCopy').disabled=$('#btnRelXlsx').disabled=!l.length;
+  if(!S.loaded){$('#relCorpo').innerHTML='<div class="vazio"><span class="ico">'+ic('link',20)+'</span>Conecte à planilha para ver os relatórios.</div>';$('#relKpis').innerHTML='';return;}
+  const env=l.filter(e=>isLocked(periodOf(e.data))),totEnv=sumMin(env);
+  $('#relKpis').innerHTML=
+    '<div class="frame-corpo"><div class="kpi-k">'+ic('wallet',14)+'Faturamento</div><div class="kpi-v">'+esc(fmtBRL(tot/60*vh))+'</div><div class="kpi-s">a '+esc(fmtBRL(vh))+' por hora</div></div>'+
+    '<div class="frame-corpo"><div class="kpi-k">'+ic('clock',14)+'Horas</div><div class="kpi-v num">'+fmtHM(tot)+'</div><div class="kpi-s">'+fmtDec(tot)+' h</div></div>'+
+    '<div class="frame-corpo"><div class="kpi-k">'+ic('calendar',14)+'Dias trabalhados</div><div class="kpi-v">'+dias+'</div><div class="kpi-s">'+(dias?'média de '+fmtHM(tot/dias)+' por dia':'—')+' · '+l.length+' lançamento'+(l.length===1?'':'s')+'</div></div>'+
+    '<div class="frame-corpo"><div class="kpi-k">'+ic('lock',14)+'Já enviado à JTC</div><div class="kpi-v">'+esc(fmtBRL(totEnv/60*vh))+'</div><div class="kpi-s">'+fmtHM(totEnv)+' · falta enviar '+esc(fmtBRL((tot-totEnv)/60*vh))+'</div></div>';
+  if(!l.length){$('#relCorpo').innerHTML='<div class="vazio"><span class="ico">'+ic('search',20)+'</span>Nenhum lançamento nesse período com esses filtros.</div>';return;}
+
+  const agrupa=(chave,nome)=>{const m=new Map();l.forEach(e=>{const k=chave(e);const g=m.get(k)||{k,nome:nome(e,k),min:0,n:0};g.min+=e.min;g.n++;m.set(k,g);});return [...m.values()];};
+  const meses=agrupa(e=>e.data.slice(0,7),(e,k)=>{const [y,m]=k.split('-');return MESES_L[+m-1].replace(/^./,c=>c.toUpperCase())+' '+y;}).sort((a,b)=>a.k<b.k?-1:1);
+  const quinz=agrupa(e=>periodOf(e.data),(e,k)=>periodLabel(k)).sort((a,b)=>a.k<b.k?1:-1);
+  const servs=agrupa(e=>norm(e.servico),e=>e.servico).sort((a,b)=>b.min-a.min);
+  const top=servs.slice(0,10),resto=servs.slice(10);
+  if(resto.length)top.push({nome:'Outros ('+resto.length+' serviços)',min:sumMin(resto),n:resto.reduce((a,g)=>a+g.n,0)});
+
+  $('#relCorpo').innerHTML=
+    '<div class="rel-grid">'+
+      '<section class="frame"><div class="frame-head"><div class="frame-titulo">'+ic('chart')+'Por mês</div></div><div class="frame-corpo">'+barras(meses,vh)+'</div></section>'+
+      '<section class="frame"><div class="frame-head"><div class="frame-titulo">'+ic('list')+'Por serviço <small>· os 10 maiores</small></div></div><div class="frame-corpo">'+barras(top,vh)+'</div></section>'+
+    '</div>'+
+    '<section class="frame"><div class="frame-head"><div class="frame-titulo">'+ic('calendar')+'Por quinzena <small>· clique para abrir</small></div></div><div class="frame-corpo flush"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Quinzena</th><th class="n">Lançamentos</th><th class="n">Horas</th><th class="n">Valor</th><th>Situação</th></tr></thead><tbody>'+
+      quinz.map(q=>{const p=periodInfo(q.k);return '<tr data-p="'+q.k+'" tabindex="0"><td><b>'+esc(q.nome)+'</b></td><td class="n">'+q.n+'</td><td class="n">'+fmtHM(q.min)+'</td><td class="n">'+esc(fmtBRL(q.min/60*vh))+'</td><td>'+
+        (p.situacao==='enviada'?'<span class="badge ok">'+ic('lock',11)+'Enviada'+(p.em?' em '+esc(fmtStamp(p.em).slice(0,5)):'')+'</span>':'<span class="badge info">Aberta</span>')+'</td></tr>';}).join('')+
+      '</tbody><tfoot><tr><td>Total do período</td><td class="n">'+l.length+'</td><td class="n">'+fmtHM(tot)+'</td><td class="n">'+esc(fmtBRL(tot/60*vh))+'</td><td></td></tr></tfoot></table></div></div></section>';
+}
+function setRel(p){Object.assign(S.rel,p);if(S.rel.de>S.rel.ate){const x=S.rel.de;S.rel.de=S.rel.ate;S.rel.ate=x;}renderRel();}
+$('#relAtalhos').addEventListener('click',ev=>{const b=ev.target.closest('[data-at]');if(!b)return;const r=atalhoRel(b.dataset.at);setRel({atalho:b.dataset.at,de:r[0],ate:r[1]});});
+$('#relDe').addEventListener('change',ev=>{if(ev.target.value)setRel({atalho:'',de:ev.target.value});});
+$('#relAte').addEventListener('change',ev=>{if(ev.target.value)setRel({atalho:'',ate:ev.target.value});});
+$('#relSit').addEventListener('click',ev=>{const b=ev.target.closest('[data-sit]');if(b)setRel({sit:b.dataset.sit});});
+$('#relBusca').addEventListener('input',ev=>setRel({busca:ev.target.value}));
+$('#relCorpo').addEventListener('click',ev=>{const tr=ev.target.closest('tr[data-p]');if(!tr)return;S.period=tr.dataset.p;location.hash='#lancamentos';});
+$('#relCorpo').addEventListener('keydown',ev=>{if(ev.key==='Enter'&&ev.target.matches('tr[data-p]'))ev.target.click();});
+$('#btnRelCopy').addEventListener('click',()=>{
+  const l=relEntries(),clean=s=>String(s||'').replace(/[\t\r\n]+/g,' ').trim();
+  copiarTexto(['Data\tQuantidade de Horas\tServiço\tObservações\tStatus do Serviço\tSolicitante'].concat(l.map(e=>[fmtDataLonga(e.data),fmtDec(e.min),clean(e.servico),clean(e.descricao),clean(e.status),clean(e.solicitante)].join('\t'))).join('\n'),'Copiado. Cole na planilha com Cmd+V.');
+});
+$('#btnRelXlsx').addEventListener('click',()=>{const r=S.rel;baixarXlsx(relEntries(),(S.cfg.arquivo||'Controle_de_Horas').replace(/[^\w\-]+/g,'_')+'_'+r.de+'_a_'+r.ate);});
 
 /* ---------- teclado ---------- */
 document.addEventListener('keydown',ev=>{
