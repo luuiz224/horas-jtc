@@ -191,11 +191,26 @@ span[data-ic]{display:inline-flex;align-items:center;justify-content:center;line
 .chk{display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--text-muted);cursor:pointer;user-select:none}
 .chk input{accent-color:var(--accent)}
 
-.dia-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.6rem 1.25rem;background:var(--surface-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);font-size:.78rem;font-weight:600;color:var(--text-soft);position:sticky;top:64px;z-index:2;scroll-margin-top:72px}
-.dia-head:first-child{border-top:0}
-.dia-head .we{color:var(--warning);font-weight:500}
-.dia-tot{font-family:var(--f-mono);color:var(--text-muted);font-weight:500}
-.lanc{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1rem;align-items:center;padding:.85rem 1.25rem;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--border);position:relative}
+/* Cada dia é um bloco separado, com espaço entre um e outro: numa lista corrida o olho perdia de que dia era cada lançamento. */
+.dias{display:flex;flex-direction:column;gap:.75rem}
+#lista{display:flex;flex-direction:column;gap:.75rem}
+.dia-bloco{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:clip;scroll-margin-top:76px}
+.dia-bloco.we{border-left:4px solid var(--warning)}
+.dia-bloco.hoje{border-color:var(--accent-line)}
+.dia-head{display:flex;align-items:center;justify-content:space-between;gap:.9rem;padding:.8rem 1.1rem;background:var(--surface-2);border-bottom:1px solid var(--border)}
+.dia-id{display:flex;align-items:center;gap:.85rem;min-width:0}
+.dia-num{width:48px;height:48px;border-radius:11px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--border-strong);line-height:1}
+.dia-num b{font-family:var(--f-title);font-size:1.3rem;font-weight:700;letter-spacing:-.02em}
+.dia-num small{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-top:3px}
+.dia-bloco.we .dia-num{background:var(--warning-dim);border-color:transparent;color:var(--warning)}
+.dia-bloco.we .dia-num small{color:var(--warning)}
+.dia-bloco.hoje .dia-num{background:var(--accent);border-color:var(--accent);color:#fff}
+.dia-bloco.hoje .dia-num small{color:#fff}
+.dia-nome{font-family:var(--f-title);font-size:1rem;font-weight:600}
+.dia-sub{font-size:.78rem;color:var(--text-muted);display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.dia-sub .we{color:var(--warning);font-weight:500}
+.dia-tot{font-family:var(--f-mono);font-size:1.05rem;font-weight:500;padding:.3rem .7rem;border-radius:999px;background:var(--surface);border:1px solid var(--border-strong);white-space:nowrap}
+.lanc{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1rem;align-items:center;padding:.85rem 1.1rem;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--border);position:relative}
 .lanc:last-child{border-bottom:0}
 .lanc:hover{background:var(--surface-hover)}
 .lanc.sel{background:var(--accent-dim)}
@@ -208,13 +223,13 @@ span[data-ic]{display:inline-flex;align-items:center;justify-content:center;line
 .lanc-by{font-size:.74rem;color:var(--text-muted)}
 .lanc-dir{display:flex;align-items:center;gap:.6rem}
 .lanc-h{font-family:var(--f-mono);font-weight:500;font-size:1rem;min-width:52px;text-align:right}
-.l-foot{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;padding:.8rem 1.25rem;border-top:1px solid var(--border);background:var(--surface-2);font-size:.84rem}
+.l-foot{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;padding:.8rem 1.1rem;border:1px solid var(--border);border-radius:12px;background:var(--surface);font-size:.84rem}
 .l-foot b{font-family:var(--f-mono);font-weight:500}
 .l-foot .tot{display:flex;gap:1.2rem;flex-wrap:wrap;color:var(--text-muted)}
 .l-foot .tot b{color:var(--text)}
-.vazio{padding:2.6rem 1.25rem;text-align:center;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:.8rem}
+.vazio{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2.6rem 1.25rem;text-align:center;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:.8rem}
 .vazio .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--surface-2);border:1px solid var(--border)}
-.locked{display:flex;align-items:center;gap:.5rem;padding:.65rem 1.25rem;background:var(--success-dim);color:var(--success);font-size:.82rem;border-bottom:1px solid var(--border)}
+.locked{display:flex;align-items:center;gap:.5rem;padding:.7rem 1.1rem;background:var(--success-dim);color:var(--success);font-size:.82rem;border-radius:12px}
 
 /* ── Tabela (quinzenas) ── */
 .tbl-wrap{overflow-x:auto}
@@ -319,7 +334,8 @@ textarea.inp{height:auto;min-height:150px;padding:.65rem .8rem;resize:vertical;l
   .p-acts .btn{flex:1 1 auto}
   .kpi-v{font-size:1.35rem}
   .lanc{padding:.8rem 1rem}
-  .dia-head{padding:.55rem 1rem}
+  .dia-head{padding:.7rem .85rem}
+  .dia-num{width:42px;height:42px}
   .lanc-ok span{display:none}
   .lanc-svc{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .grid2,.det-info{grid-template-columns:1fr}
@@ -408,7 +424,7 @@ textarea.inp{height:auto;min-height:150px;padding:.65rem .8rem;resize:vertical;l
               <label class="busca"><span data-ic="search" data-sz="15"></span><input id="busca" type="search" placeholder="Buscar serviço ou texto" autocomplete="off"></label>
             </div>
           </div>
-          <div class="frame-corpo flush">
+          <div class="dias">
             <div class="locked" id="lockedNote" hidden><span data-ic="lock" data-sz="15"></span>Quinzena enviada à JTC: horas, datas e exclusões travadas. Conferência e comentários continuam liberados.</div>
             <div id="lista"></div>
             <div class="l-foot" id="lFoot"></div>
@@ -736,9 +752,13 @@ function renderLista(){
       (!todos.length&&canWrite()&&!isLocked(S.period)?'<button class="btn btn-primary btn-sm" data-a="novo">'+ic('plus',14)+'Lançar horas</button>':'')+'</div>';
   }else{
     const porDia={};list.forEach(e=>(porDia[e.data]=porDia[e.data]||[]).push(e));
+    const hoje=todayISO();
     el.innerHTML=Object.keys(porDia).map(d=>{
-      const l=porDia[d],t=sumMin(l.filter(e=>!e.excluido));
-      return '<div class="dia-head" id="dia-'+d+'"><span>'+DIAS_L[wd(d)]+', '+fmtDate(d)+(isWeekend(d)?' <span class="we">· fim de semana</span>':'')+'</span><span class="dia-tot">'+fmtHM(t)+'</span></div>'+l.map(itemHTML).join('');
+      const l=porDia[d],ativos=l.filter(e=>!e.excluido),t=sumMin(ativos),p=parts(d),we=isWeekend(d);
+      return '<section class="dia-bloco'+(we?' we':'')+(d===hoje?' hoje':'')+'" id="dia-'+d+'">'+
+        '<header class="dia-head"><div class="dia-id"><div class="dia-num"><b>'+pad(p.d)+'</b><small>'+MESES[p.m-1]+'</small></div>'+
+        '<div><div class="dia-nome">'+DIAS_L[wd(d)]+(d===hoje?' · hoje':'')+'</div><div class="dia-sub">'+fmtDate(d)+'/'+p.y+' · '+ativos.length+' lançamento'+(ativos.length===1?'':'s')+(we?' <span class="we">· fim de semana</span>':'')+'</div></div></div>'+
+        '<span class="dia-tot" title="Total do dia">'+fmtHM(t)+'</span></header>'+l.map(itemHTML).join('')+'</section>';
     }).join('');
   }
   foot.hidden=!todos.length;
