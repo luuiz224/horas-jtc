@@ -57,6 +57,10 @@ ou pelas datas De/Até, filtre por quinzenas enviadas/abertas e por serviço. Mo
 quanto já foi enviado à JTC, totais por mês, por serviço e por quinzena, e baixa o XLSX do período no modelo JTC.
 O valor usa o valor da hora atual da Configuração.
 
+**Dias úteis sem lançamento**: dias de segunda a sexta já passados, sem nenhuma hora, numa quinzena aberta, ficam
+tracejados em amarelo na régua e aparecem num aviso no topo; clicar no dia abre o formulário com a data preenchida.
+Feriado ou folga: "Não trabalhei nesses dias" para de avisar (fica salvo no navegador). Só conta a partir do primeiro lançamento.
+
 Atalhos: `N` novo lançamento, `←`/`→` troca de quinzena, `Esc` fecha o painel. Tema claro/escuro no botão da barra de cima ou em Configuração.
 
 Quinzenas: 1ª = dias 01–15, 2ª = dia 16 até o fim do mês, sempre pela data do lançamento.

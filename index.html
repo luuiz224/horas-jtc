@@ -177,6 +177,16 @@ span[data-ic]{display:inline-flex;align-items:center;justify-content:center;line
 .day .h{font-family:var(--f-mono);font-size:.68rem;color:var(--text-soft);min-height:15px}
 .day .d{font-family:var(--f-mono);font-size:.78rem;color:var(--text-soft);font-weight:500}
 .day.hoje .d{color:#fff;background:var(--accent);border-radius:6px;padding:0 5px}
+.day.falta{cursor:pointer}
+.day.falta .bar{border:1.5px dashed var(--warning);background:var(--warning-dim)}
+.day.falta .d{color:var(--warning);font-weight:600}
+.day.falta .h::before{content:'!';font-family:var(--f-body);font-weight:700;color:var(--warning)}
+.day.falta:hover{background:var(--warning-dim)}
+.banner.falta{align-items:flex-start}
+.banner-dias{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.banner .dia-chip{background:var(--surface);border-color:color-mix(in srgb,var(--warning) 45%,transparent);color:var(--warning);font-family:var(--f-mono);font-size:.76rem}
+.banner .dia-chip:hover{background:var(--warning-dim)}
+.banner .btn-ghost{border-color:transparent;text-decoration:underline;text-underline-offset:3px}
 
 /* ── Lançamentos ── */
 .l-tools{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
@@ -748,7 +758,24 @@ function renderBanners(){
   else if(S.err) b.push('<div class="banner bad"><span>'+ic('alert')+esc(S.err)+'</span><button class="btn btn-sm" data-b="retry">Tentar de novo</button></div>');
   const ch=S.view==='lancamentos'?changedSinceSent(S.period):[];
   if(ch.length) b.push('<div class="banner warn"><span>'+ic('alert')+'<span><strong>Mudou depois de enviada à JTC:</strong> '+esc(ch.join('; '))+'.</span></span></div>');
+  const falta=S.view==='lancamentos'?diasSemLanc(S.period):[];
+  if(falta.length) b.push('<div class="banner warn falta"><span>'+ic('calendar')+'<span><strong>'+falta.length+(falta.length===1?' dia útil sem lançamento':' dias úteis sem lançamento')+'</strong> nesta quinzena. Clique num dia para lançar.</span></span>'+
+    '<div class="banner-dias">'+falta.map(d=>'<button class="btn btn-sm dia-chip" data-b="lancarDia" data-dia="'+d+'">'+ic('plus',13)+DIAS[wd(d)]+' '+fmtDate(d)+'</button>').join('')+
+    '<button class="btn btn-sm btn-ghost" data-b="ignorar" title="Feriado, folga ou dia sem trabalho: para de avisar sobre esses dias">Não trabalhei nesses dias</button></div></div>');
   $('#banners').innerHTML=b.join('');
+}
+/* Dias úteis (seg–sex) já passados, sem nenhum lançamento, numa quinzena ainda aberta.
+   Hoje não conta (ainda dá tempo). Feriados e folgas o usuário dispensa, e isso fica salvo no navegador. */
+const LS_IGN='horasjtc.diasIgnorados';
+function diasIgnorados(){try{return new Set(JSON.parse(localStorage.getItem(LS_IGN)||'[]'));}catch(e){return new Set();}}
+function ignorarDias(lista){const s=diasIgnorados();lista.forEach(d=>s.add(d));try{localStorage.setItem(LS_IGN,JSON.stringify([...s].sort().slice(-400)));}catch(e){}}
+function diasSemLanc(key){
+  if(!S.loaded||isLocked(key))return [];
+  // Só a partir do primeiro lançamento da planilha: antes disso o site nem era usado.
+  const inicio=S.entries.reduce((m,e)=>!e.excluido&&(!m||e.data<m)?e.data:m,'');if(!inicio)return [];
+  const r=periodRange(key),hoje=todayISO(),com=new Set(periodEntries(key).map(e=>e.data)),ign=diasIgnorados(),out=[];
+  for(let d=r.a;d<=r.b;d++){const iso=r.y+'-'+pad(r.m)+'-'+pad(d);if(iso>=hoje)break;if(iso>=inicio&&!isWeekend(iso)&&!com.has(iso)&&!ign.has(iso))out.push(iso);}
+  return out;
 }
 
 function confBadge(e){return e.conf==='ok'?'<span class="badge ok">'+ic('check',12)+'Conferido</span>':e.conf==='divergente'?'<span class="badge bad">'+ic('alert',12)+'Divergência</span>':'<span class="badge neutro">A conferir</span>';}
@@ -778,10 +805,10 @@ function renderQuinzena(){
       '<div class="prog-leg"><span><i class="c-ok"></i>'+ok+' ok</span><span><i class="c-pend"></i>'+pend+' a conferir</span>'+(div?'<span style="color:var(--danger)"><i class="c-div"></i>'+div+' divergência'+(div>1?'s':'')+'</span>':'')+'</div></div>';
 
   const today=todayISO(),byDay={};list.forEach(e=>byDay[e.data]=(byDay[e.data]||0)+e.min);
-  const max=Math.max(8*60,...Object.values(byDay));let h='';
+  const max=Math.max(8*60,...Object.values(byDay)),faltam=new Set(diasSemLanc(key));let h='';
   for(let d=r.a;d<=r.b;d++){
-    const iso=r.y+'-'+pad(r.m)+'-'+pad(d),v=byDay[iso]||0,we=isWeekend(iso);
-    h+='<div class="day'+(we?' we':'')+(iso===today?' hoje':'')+(v?' tem':'')+'"'+(v?' data-dia="'+iso+'"':'')+' title="'+esc(DIAS_L[wd(iso)]+', '+fmtDate(iso)+(v?' · '+fmtHM(v):' · sem horas'))+'">'+
+    const iso=r.y+'-'+pad(r.m)+'-'+pad(d),v=byDay[iso]||0,we=isWeekend(iso),f=faltam.has(iso);
+    h+='<div class="day'+(we?' we':'')+(iso===today?' hoje':'')+(v?' tem':'')+(f?' falta':'')+'"'+(v?' data-dia="'+iso+'"':'')+(f?' data-falta="'+iso+'"':'')+' title="'+esc(DIAS_L[wd(iso)]+', '+fmtDate(iso)+(v?' · '+fmtHM(v):f?' · dia útil sem lançamento (clique para lançar)':' · sem horas'))+'">'+
       '<span class="h">'+(v?fmtHM(v).replace('h00','h'):'')+'</span><div class="bar">'+(v?'<div class="fill" style="height:'+(v/max*100).toFixed(1)+'%"></div>':'')+'</div><span class="d">'+pad(d)+'</span><span>'+DIAS[wd(iso)]+'</span></div>';
   }
   $('#ruler').innerHTML=h;
@@ -934,7 +961,7 @@ function montarForm(){
     (e?'':'<button type="button" class="btn" id="fSaveMais" title="Salva e deixa o formulário aberto para o próximo">Salvar e lançar outro</button>')+
     '<button type="submit" form="form" class="btn btn-primary" id="fSave">'+ic('check',15)+(e?'Salvar alteração':'Lançar horas')+'</button>';
   if(e){$('#fData').value=e.data;$('#fHoras').value=fmtHM(e.min);$('#fServico').value=e.servico||'';$('#fStatus').value=e.status||'Concluído';$('#fSolic').value=e.solicitante||'';$('#fDesc').value=e.descricao||'';}
-  else{const r=periodRange(S.period),t=todayISO();$('#fData').value=periodOf(t)===S.period?t:r.y+'-'+pad(r.m)+'-'+pad(r.a);$('#fSolic').value='Will';}
+  else{const r=periodRange(S.period),t=todayISO();$('#fData').value=S.drawer.data||(periodOf(t)===S.period?t:r.y+'-'+pad(r.m)+'-'+pad(r.a));$('#fSolic').value='Will';}
   updateDurPreview();
   $('#fHoras').addEventListener('input',updateDurPreview);
   $('#durChips').addEventListener('click',ev=>{const b=ev.target.closest('[data-add]');if(!b)return;const add={'+15min':15,'+30min':30,'+1h':60,'+2h':120}[b.dataset.add];$('#fHoras').value=add?fmtHM((parseDur($('#fHoras').value)||0)+add):'';updateDurPreview();$('#fHoras').focus();});
@@ -980,7 +1007,7 @@ async function salvarForm(outro){
   }catch(e){msg.textContent=e.message||'Não salvou.';if(e.code==='conflict')fecharDrawer();fail(e);}
   if($('#fSave'))$('#fSave').disabled=!canWrite();
 }
-function abrirForm(id){if(!canWrite()){abrirConn();return;}abrirDrawer({tipo:'form',id:id||null});}
+function abrirForm(id,data){if(!canWrite()){abrirConn();return;}abrirDrawer({tipo:'form',id:id||null,data:data||null});}
 $('#btnNovo').addEventListener('click',()=>abrirForm());
 
 /* ---------- ações (lista e painel) ---------- */
@@ -1011,7 +1038,7 @@ $('#drawer').addEventListener('click',ev=>{const b=ev.target.closest('[data-a]')
 $('#lFoot').addEventListener('change',ev=>{if(ev.target.id==='showDel'){S.showDel=ev.target.checked;renderLista();}});
 $('#filtros').addEventListener('click',ev=>{const b=ev.target.closest('[data-f]');if(!b)return;S.filtro=b.dataset.f;renderQuinzena();});
 $('#busca').addEventListener('input',ev=>{S.busca=ev.target.value;renderLista();});
-$('#ruler').addEventListener('click',ev=>{const d=ev.target.closest('[data-dia]');if(!d)return;
+$('#ruler').addEventListener('click',ev=>{const f=ev.target.closest('[data-falta]');if(f){abrirForm(null,f.dataset.falta);return;}const d=ev.target.closest('[data-dia]');if(!d)return;
   if(S.filtro!=='todos'||S.busca){S.filtro='todos';S.busca='';$('#busca').value='';renderQuinzena();}
   const h=document.getElementById('dia-'+d.dataset.dia);if(h)h.scrollIntoView({behavior:'smooth',block:'start'});});
 
@@ -1108,6 +1135,8 @@ $('#banners').addEventListener('click',ev=>{
   const b=ev.target.closest('[data-b]');if(!b)return;
   if(b.dataset.b==='conn')abrirConn();
   if(b.dataset.b==='retry')refresh(false);
+  if(b.dataset.b==='lancarDia')abrirForm(null,b.dataset.dia);
+  if(b.dataset.b==='ignorar'){ignorarDias(diasSemLanc(S.period));renderAll();toast('Certo, não aviso mais sobre esses dias.','check');}
 });
 
 /* ---------- colar da IA ----------
