@@ -1,0 +1,6 @@
+# Só a página vai para o GitHub (repositório público).
+*.json
+*.xlsx
+Code.gs
+_teste/
+.DS_Store

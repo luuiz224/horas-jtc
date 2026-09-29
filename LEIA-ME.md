@@ -1,0 +1,49 @@
+# Controle de Horas JTC
+
+Página única (GitHub Pages) que grava numa planilha do Google via Apps Script.
+A planilha é o banco de dados; a página é só a tela. Luiz e Wilson lançam, conferem e exportam no mesmo lugar.
+
+## 1. Planilha + Apps Script (uma vez, ~5 min)
+
+1. Crie uma planilha nova no Google Sheets, por exemplo "Horas JTC".
+2. **Extensões > Apps Script**. Apague o conteúdo e cole o `Code.gs` inteiro.
+3. Na linha `const CHAVE_INICIAL = 'troque-esta-chave';`, troque pela senha de vocês dois.
+4. Na barra de cima, escolha a função **setup** e clique em **Executar**. Autorize com sua conta Google.
+   Isso cria as abas `Lancamentos`, `Quinzenas` e `Config`.
+5. **Implantar > Nova implantação > App da Web**
+   - Executar como: **Eu**
+   - Quem pode acessar: **Qualquer pessoa**
+6. Copie a URL que termina em `/exec`.
+
+> Ao alterar o `Code.gs` depois, use **Implantar > Gerenciar implantações > lápis > Nova versão**. Assim a URL não muda.
+> Para trocar a chave: edite `CHAVE_INICIAL` e rode a função `trocarChave`.
+
+## 2. Publicar a página no GitHub Pages
+
+1. Crie um repositório (ex.: `horas-jtc`) e suba **só o `index.html`**.
+2. **Settings > Pages > Source: Deploy from a branch > main / (root) > Save**.
+3. Em 1–2 minutos a página fica em `https://SEU-USUARIO.github.io/horas-jtc/`.
+
+Não suba o `historico-jul-set-2026.json` nem o `Code.gs` com a chave: o repositório é público.
+Sem a chave, quem achar a página não lê nem grava nada.
+
+## 3. Primeiro acesso (cada um, no próprio Mac)
+
+Abra a página e preencha **Conexão**: a URL `/exec`, a chave e o seu nome (Luiz ou Wilson).
+Fica salvo naquele navegador.
+
+## 4. Importar o histórico (só uma vez, com a planilha vazia)
+
+Na faixa azul "A planilha está vazia", clique em **Importar histórico…** e escolha `historico-jul-set-2026.json`.
+São 39 lançamentos de 01/07 a 24/09 consolidados das várias versões das planilhas. As linhas com dúvida vêm com um aviso amarelo.
+
+## Fluxo da quinzena
+
+1. Luiz lança as horas no dia (formato `2h30`, `2:30`, `2,5` ou `45min`; a página mostra como entendeu).
+2. Wilson abre a quinzena e clica em **Conferir** em cada linha, ou em **Divergência** com o motivo escrito.
+3. Com tudo conferido: **Baixar XLSX (formato JTC)** (mesmas colunas da planilha antiga) ou **Copiar para Excel**.
+4. **Marcar como enviada**: horas, datas e exclusões daquela quinzena ficam travadas.
+   Se precisar corrigir, **Reabrir quinzena**. Fica registrado quem reabriu e o que mudou depois do envio.
+
+Quinzenas: 1ª = dias 01–15, 2ª = dia 16 até o fim do mês, sempre pela data do lançamento.
+A página atualiza sozinha a cada 90 s e quando você volta para a aba. Se duas pessoas editarem a mesma linha ao mesmo tempo, a segunda é avisada e ninguém sobrescreve ninguém.
