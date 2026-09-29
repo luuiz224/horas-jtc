@@ -301,6 +301,18 @@ textarea.inp{height:auto;min-height:150px;padding:.65rem .8rem;resize:vertical;l
 .timeline li:first-child::before{border-color:var(--accent)}
 .timeline .when{display:block;font-family:var(--f-mono);font-size:.72rem;color:var(--text-muted)}
 
+/* ── Colar da IA ── */
+.passo{display:flex;gap:.85rem;align-items:flex-start}
+.passo b{display:block;font-size:.9rem;font-weight:600;margin-bottom:.15rem}
+.passo p{margin-bottom:.6rem}
+.passo textarea{min-height:220px;font-family:var(--f-mono);font-size:.8rem}
+.passo-n{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:var(--accent-dim);color:var(--accent-text);font-weight:700;font-size:.8rem;border:1px solid var(--accent-line)}
+.imp-card{display:flex;flex-direction:column;gap:.8rem;padding:1rem;border:1px solid var(--border-strong);border-radius:12px;background:var(--surface-2)}
+.imp-top{display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+.imp-top b{font-size:.84rem}
+.inp.falta{border-color:var(--warning);box-shadow:0 0 0 3px var(--warning-dim)}
+.prompt{white-space:pre-wrap;font-family:var(--f-mono);font-size:.78rem;line-height:1.55;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.9rem 1rem;max-height:320px;overflow:auto}
+
 /* ── Modal ── */
 .modal{position:fixed;inset:0;display:grid;place-items:center;z-index:70;padding:16px}
 /* Dentro da janela o véu fica ATRÁS da caixa; com z-index próprio ele cobria o formulário e bloqueava os cliques. */
@@ -343,8 +355,8 @@ textarea.inp{height:auto;min-height:150px;padding:.65rem .8rem;resize:vertical;l
   .l-tools{width:100%}
   .seg{width:100%;min-width:0;flex:1 1 100%;overflow-x:auto}
   .seg button{flex:1 0 auto}
-  .topbar .btn-primary span:last-child{display:none}
-  .topbar .btn-primary{width:38px;padding:0}
+  .topbar .btn-primary span:last-child,#btnColar span:last-child{display:none}
+  .topbar .btn-primary,#btnColar{width:38px;padding:0}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -381,6 +393,7 @@ textarea.inp{height:auto;min-height:150px;padding:.65rem .8rem;resize:vertical;l
       <h1 id="viewTitle">Lançamentos</h1>
       <button class="icon-btn" id="btnTema" title="Alternar tema claro/escuro" aria-label="Alternar tema"></button>
       <button class="icon-btn" id="btnReload" title="Buscar o que o outro lançou" aria-label="Atualizar" data-ic="refresh"></button>
+      <button class="btn" id="btnColar" title="Colar lançamento gerado no chat da IA (ou Cmd+V na página)"><span data-ic="sparkle"></span><span>Colar da IA</span></button>
       <button class="btn btn-primary" id="btnNovo" title="Novo lançamento (N)"><span data-ic="plus"></span><span>Lançar horas</span></button>
     </header>
 
@@ -456,6 +469,13 @@ textarea.inp{height:auto;min-height:150px;padding:.65rem .8rem;resize:vertical;l
         <section class="frame">
           <div class="frame-head"><div class="frame-titulo"><span data-ic="link"></span>Conexão com a planilha</div></div>
           <div class="frame-corpo"><div class="cfg-linha"><p id="cfgConn"></p><button class="btn" id="btnConn2">Alterar conexão</button></div></div>
+        </section>
+        <section class="frame">
+          <div class="frame-head"><div class="frame-titulo"><span data-ic="sparkle"></span>Prompt para a IA <small>· o mesmo do botão "Colar da IA"</small></div><button class="btn btn-sm" id="btnPromptCfg"><span data-ic="copy" data-sz="14"></span>Copiar prompt</button></div>
+          <div class="frame-corpo">
+            <p class="hint" style="margin-bottom:.7rem">Cole no fim de qualquer conversa (Claude, ChatGPT…). Se quiser pular esse passo, coloque este texto nas instruções de um Projeto do Claude ou nas instruções personalizadas do ChatGPT e peça só "gera o lançamento".</p>
+            <pre class="prompt" id="promptTxt"></pre>
+          </div>
         </section>
         <section class="frame">
           <div class="frame-head"><div class="frame-titulo"><span data-ic="sun"></span>Aparência <small>· só neste navegador</small></div></div>
@@ -537,6 +557,7 @@ const IC={
   unlock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>',
   chart:'<path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16v-6"/>',
   wallet:'<rect x="2" y="5" width="20" height="15" rx="2"/><path d="M16 12h.01M2 9h20"/>',
+  sparkle:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.7 1.8 1.8.7-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z"/>',
   file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>'
 };
 const ic=(n,s)=>'<svg width="'+(s||16)+'" height="'+(s||16)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+IC[n]+'</svg>';
@@ -788,13 +809,14 @@ function renderCfg(){
 }
 
 /* ---------- painel lateral ---------- */
-function abrirDrawer(d){S.drawer=d;S.pendingDel=null;S.divForm=false;$('#drawer').hidden=false;$('#drawerScrim').hidden=false;renderDrawer(true);renderLista();}
+function abrirDrawer(d){$('#drawerBody').onclick=$('#drawerBody').oninput=null;S.drawer=d;S.pendingDel=null;S.divForm=false;$('#drawer').hidden=false;$('#drawerScrim').hidden=false;renderDrawer(true);renderLista();}
 function fecharDrawer(){S.drawer=null;S.divForm=false;S.pendingDel=null;$('#drawer').hidden=true;$('#drawerScrim').hidden=true;if(S.view==='lancamentos')renderLista();}
 $('#drawerClose').addEventListener('click',fecharDrawer);
 $('#drawerScrim').addEventListener('click',()=>{if(!formSujo()||confirm('Descartar o que foi digitado?'))fecharDrawer();});
 
 function renderDrawer(novo){
   if(!S.drawer)return;
+  if(S.drawer.tipo==='import'){if(novo)montarImport();else if($('#impSalvar'))$('#impSalvar').disabled=!canWrite()||!!S.busy;return;}
   if(S.drawer.tipo==='form'){if(novo)montarForm();else{const d=!canWrite()||!!S.busy;$('#fSave').disabled=d;if($('#fSaveMais'))$('#fSaveMais').disabled=d;}return;}
   const e=entry(S.drawer.id);if(!e){fecharDrawer();return;}
   // guarda o que está sendo digitado para não perder no redesenho
@@ -836,7 +858,7 @@ function renderDrawer(novo){
 }
 
 /* ---------- formulário (no painel) ---------- */
-function formSujo(){return S.drawer&&S.drawer.tipo==='form'&&!S.drawer.id&&(($('#fHoras')||{}).value||($('#fServico')||{}).value||($('#fDesc')||{}).value);}
+function formSujo(){if(S.drawer&&S.drawer.tipo==='import')return !!(S.importItens||($('#impTxt')&&$('#impTxt').value.trim()));return S.drawer&&S.drawer.tipo==='form'&&!S.drawer.id&&(($('#fHoras')||{}).value||($('#fServico')||{}).value||($('#fDesc')||{}).value);}
 function montarForm(){
   const e=S.drawer.id?entry(S.drawer.id):null;
   $('#drawerTit').innerHTML=e?'Editar lançamento<small>'+DIAS_L[wd(e.data)]+', '+fmtDate(e.data)+'</small>':'Novo lançamento<small>Grava direto na planilha, com histórico</small>';
@@ -1031,6 +1053,165 @@ $('#banners').addEventListener('click',ev=>{
   if(b.dataset.b==='retry')refresh(false);
 });
 
+/* ---------- colar da IA ----------
+   Funciona em qualquer chat (Claude, ChatGPT, modo code ou não): a página guarda o prompt,
+   a IA devolve blocos num formato fixo e a página lê, mostra para revisar e lança. */
+const PROMPT_IA=`Com base no que fizemos nesta conversa, gere o lançamento de horas para a JTC exatamente neste formato, sem nenhum texto antes ou depois:
+
+=== LANÇAMENTO JTC ===
+Data: DD/MM/AAAA
+Horas:
+Serviço:
+Status: Concluído
+Solicitante: Will
+Observações:
+=== FIM ===
+
+Regras:
+- Data: o dia em que o trabalho foi feito. Se não souber, use a data de hoje.
+- Horas: só preencha se eu tiver dito quanto tempo levou (ex.: 2h30). Senão, deixe em branco que eu preencho.
+- Serviço: título curto do problema ou da entrega, até 8 palavras, sem ponto final.
+- Status: Concluído, Em andamento ou Pendente.
+- Observações: texto corrido em primeira pessoa e no passado, 3 a 6 frases, em linguagem simples para quem não é técnico. Diga qual era o problema (com número de pedido, registro ou script quando houver), a causa, o que eu fiz para resolver e como testei. Sem markdown, sem listas, sem emojis.
+- Se na conversa houve mais de um trabalho diferente ou mais de um dia, gere um bloco para cada um.`;
+async function copiarTexto(txt,msg){
+  try{await navigator.clipboard.writeText(txt);toast(msg,'copy');}
+  catch(e){const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');toast(msg,'copy');}catch(_){toast('Não consegui copiar.','alert');}ta.remove();}
+}
+const CHAVES={data:'data',dia:'data',horas:'horas',hora:'horas',tempo:'horas',servico:'servico',titulo:'servico',status:'status','status do servico':'status',
+  solicitante:'solicitante',observacoes:'descricao',observacao:'descricao',obs:'descricao',descricao:'descricao','o que foi feito':'descricao'};
+const limparMd=s=>s.replace(/\*\*|__|`/g,'').replace(/^\s*[-*•>]\s+/,'');
+function parseData(s){
+  s=String(s||'').trim();let m,y,mo,d;
+  if((m=s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/))){y=+m[1];mo=+m[2];d=+m[3];}
+  else if((m=s.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/))){d=+m[1];mo=+m[2];y=m[3]?(+m[3]<100?2000+ +m[3]:+m[3]):new Date().getFullYear();}
+  else return '';
+  const dt=new Date(y,mo-1,d);if(dt.getMonth()!==mo-1||dt.getDate()!==d)return '';
+  return y+'-'+pad(mo)+'-'+pad(d);
+}
+function parseHoras(s){
+  const t=norm(s).replace(/\s+e\s+/g,'').replace(/horas?|hrs?/g,'h').replace(/minutos?|mins?/g,'min').replace(/\s+/g,'');
+  const m=parseDur(t);return m&&m>0?m:null;
+}
+function normStatus(s){const n=norm(s);return n.includes('andamento')?'Em andamento':n.includes('pend')?'Pendente':'Concluído';}
+function parseBloco(b){
+  const e={data:'',horasTxt:'',servico:'',status:'',solicitante:'',descricao:''},desc=[];let atual=null;
+  b.split('\n').forEach(raw=>{
+    const l=limparMd(raw),m=l.match(/^([A-Za-zÀ-ÿ ]{2,24}):\s*(.*)$/),k=m&&CHAVES[norm(m[1]).trim()];
+    // Dentro das observações só troca de campo se for um dos campos curtos com valor curto.
+    if(k&&(atual!=='descricao'||(k!=='descricao'&&m[2].length<60))){
+      atual=k;if(k==='descricao'){if(m[2].trim())desc.push(m[2]);}else e[k==='horas'?'horasTxt':k]=m[2].trim();return;
+    }
+    if(atual==='descricao')desc.push(limparMd(raw));
+  });
+  e.descricao=desc.join('\n').trim().replace(/\n{3,}/g,'\n\n');
+  e.data=parseData(e.data)||todayISO();
+  e.min=parseHoras(e.horasTxt);
+  e.status=normStatus(e.status);
+  e.solicitante=e.solicitante||'Will';
+  e.servico=e.servico.replace(/[.;]\s*$/,'').slice(0,160);
+  return e;
+}
+function parseChat(txt){
+  txt=String(txt||'').replace(/\r/g,'');
+  const blocos=[],re=/={2,}\s*LAN[ÇC]AMENTO[^\n=]*={2,}([\s\S]*?)(?=={2,}\s*(?:FIM|LAN[ÇC]AMENTO)|$)/gi;let m;
+  while((m=re.exec(txt)))blocos.push(m[1]);
+  if(!blocos.length&&/servi[çc]o\s*:/i.test(norm(txt).replace('servico','serviço')))blocos.push(txt);
+  return blocos.map(parseBloco).filter(e=>e.servico||e.descricao);
+}
+function abrirImport(texto){
+  if(!canWrite()){abrirConn();return;}
+  S.importItens=null;S.importTxt=texto||'';
+  if(texto){const l=parseChat(texto);if(l.length)S.importItens=l;}
+  abrirDrawer({tipo:'import'});
+  if(texto&&!S.importItens)$('#impMsg').textContent='Não achei nenhum bloco "=== LANÇAMENTO JTC ===" nesse texto. Confira se copiou a resposta inteira da IA.';
+}
+function lerImport(){
+  (S.importItens||[]).forEach((e,i)=>{const v=id=>{const el=document.getElementById('imp-'+id+'-'+i);return el?el.value:'';};
+    e.data=v('data');e.horasTxt=v('horas');e.min=parseDur(v('horas'));e.servico=v('svc').trim();e.status=v('status');e.solicitante=v('solic').trim();e.descricao=v('desc').trim();});
+}
+function avisosImport(e){
+  const a=[];
+  if(!e.min)a.push(['warn','Informe as horas']);
+  if(e.data&&isLocked(periodOf(e.data)))a.push(['bad','A quinzena de '+fmtDate(e.data)+' já foi enviada. Reabra antes.']);
+  if(S.entries.some(x=>!x.excluido&&x.data===e.data&&norm(x.servico)===norm(e.servico)))a.push(['bad','Parece que já foi lançado: mesmo serviço no mesmo dia.']);
+  if(e.data&&isWeekend(e.data))a.push(['warn','Cai num fim de semana. Confira a data.']);
+  return a;
+}
+function montarImport(){
+  const itens=S.importItens;
+  $('#drawerTit').innerHTML='Colar da IA<small>'+(itens?'Revise e lance':'Lançamento gerado no chat')+'</small>';
+  if(!itens){
+    $('#drawerBody').innerHTML=
+      '<div class="passo"><span class="passo-n">1</span><div><b>No fim da conversa com a IA, cole o prompt padrão.</b><p class="hint">Funciona no Claude, no ChatGPT ou em qualquer outro, no computador ou no celular.</p>'+
+        '<button class="btn btn-sm" type="button" id="impPrompt">'+ic('copy',14)+'Copiar prompt</button></div></div>'+
+      '<div class="passo"><span class="passo-n">2</span><div style="flex:1;min-width:0"><b>Copie a resposta da IA e cole aqui.</b><p class="hint">Dica: com a página aberta, dá para colar direto com Cmd+V, sem abrir esta janela.</p>'+
+        '<textarea class="inp" id="impTxt" placeholder="=== LANÇAMENTO JTC ===&#10;Data: 29/09/2026&#10;Horas: 2h&#10;Serviço: …&#10;…&#10;=== FIM ==="></textarea><span class="form-msg" id="impMsg"></span></div></div>';
+    $('#impTxt').value=S.importTxt||'';
+    $('#drawerFoot').innerHTML='<button type="button" class="btn btn-ghost" id="impCancel">Cancelar</button><button type="button" class="btn btn-primary" id="impLer">'+ic('check',15)+'Ler lançamentos</button>';
+    $('#impPrompt').addEventListener('click',()=>copiarTexto(PROMPT_IA,'Prompt copiado. Cole no fim da conversa com a IA.'));
+    $('#impLer').addEventListener('click',()=>{const t=$('#impTxt').value;const l=parseChat(t);S.importTxt=t;
+      if(!l.length){$('#impMsg').textContent='Não achei nenhum bloco "=== LANÇAMENTO JTC ===" nesse texto. Confira se copiou a resposta inteira da IA.';return;}
+      S.importItens=l;montarImport();});
+    $('#impCancel').addEventListener('click',fecharDrawer);
+    setTimeout(()=>$('#impTxt')&&$('#impTxt').focus(),60);
+    return;
+  }
+  const n=itens.length;
+  $('#drawerBody').innerHTML=itens.map((e,i)=>{
+    const av=avisosImport(e).map(([t,m])=>'<div class="alerta'+(t==='bad'?' bad':'')+'"><span>'+ic(t==='bad'?'alert':'flag',15)+esc(m)+'</span></div>').join('');
+    return '<div class="imp-card"><div class="imp-top"><b>Lançamento '+(i+1)+' de '+n+'</b><button type="button" class="btn btn-sm btn-ghost" data-imp-del="'+i+'">'+ic('x',13)+'Remover</button></div>'+av+
+      '<div class="grid2"><label class="campo"><span>Data</span><input class="inp" type="date" id="imp-data-'+i+'" value="'+esc(e.data)+'"></label>'+
+      '<label class="campo"><span>Horas</span><input class="inp num'+(e.min?'':' falta')+'" id="imp-horas-'+i+'" value="'+esc(e.min?fmtHM(e.min):'')+'" placeholder="2h30, 2:30 ou 2,5"></label></div>'+
+      '<label class="campo"><span>Serviço</span><input class="inp" id="imp-svc-'+i+'" list="svcList" maxlength="160" value="'+esc(e.servico)+'"></label>'+
+      '<div class="grid2"><label class="campo"><span>Status</span><select class="inp" id="imp-status-'+i+'">'+['Concluído','Em andamento','Pendente'].map(s=>'<option'+(s===e.status?' selected':'')+'>'+s+'</option>').join('')+'</select></label>'+
+      '<label class="campo"><span>Solicitante</span><input class="inp" id="imp-solic-'+i+'" maxlength="60" value="'+esc(e.solicitante)+'"></label></div>'+
+      '<label class="campo"><span>Observações</span><textarea class="inp" id="imp-desc-'+i+'" maxlength="4000" style="min-height:120px">'+esc(e.descricao)+'</textarea></label>'+
+      '<span class="form-msg" id="imp-err-'+i+'"></span></div>';
+  }).join('');
+  $('#drawerFoot').innerHTML='<span class="form-msg" id="impMsg"></span><button type="button" class="btn btn-ghost" id="impVoltar">'+ic('left',15)+'Voltar</button>'+
+    '<button type="button" class="btn btn-primary" id="impSalvar">'+ic('check',15)+'Lançar '+n+(n===1?' lançamento':' lançamentos')+'</button>';
+  $('#impVoltar').addEventListener('click',()=>{lerImport();S.importItens=null;montarImport();});
+  $('#impSalvar').addEventListener('click',salvarImport);
+  // Atribuição (não addEventListener): o painel é redesenhado várias vezes e os ouvintes se acumulariam.
+  $('#drawerBody').onclick=ev=>{const b=ev.target.closest('[data-imp-del]');if(!b)return;lerImport();S.importItens.splice(+b.dataset.impDel,1);
+    if(!S.importItens.length){S.importItens=null;}montarImport();};
+  $('#drawerBody').oninput=ev=>{if(ev.target.id&&ev.target.id.startsWith('imp-horas-'))ev.target.classList.toggle('falta',!parseDur(ev.target.value));};
+  const primeira=itens.findIndex(e=>!e.min);if(primeira>=0)setTimeout(()=>{const h=document.getElementById('imp-horas-'+primeira);h&&h.focus();},80);
+}
+async function salvarImport(){
+  lerImport();let ok=true;
+  S.importItens.forEach((e,i)=>{let m='';
+    if(!e.data)m='Informe a data.';else if(!e.min||e.min<=0)m='Horas inválidas. Use 2h30, 2:30, 2,5 ou 45min.';else if(e.min>24*60)m='Mais de 24h num lançamento.';
+    else if(!e.servico)m='Informe o serviço.';else if(isLocked(periodOf(e.data)))m='Quinzena já enviada. Reabra antes.';
+    $('#imp-err-'+i).textContent=m;if(m)ok=false;});
+  if(!ok){$('#impMsg').textContent='Corrija os campos marcados.';return;}
+  $('#impSalvar').disabled=true;$('#impMsg').textContent='';let feitos=0,ultima='';
+  try{
+    while(S.importItens.length){
+      const e=S.importItens[0];
+      await api('create',{entry:{data:e.data,min:e.min,servico:e.servico,status:e.status,solicitante:e.solicitante,descricao:e.descricao}});
+      S.importItens.shift();feitos++;ultima=e.data;
+    }
+    if(ultima)S.period=periodOf(ultima);
+    toast(feitos+(feitos===1?' lançamento feito':' lançamentos feitos'),'check');S.importItens=null;fecharDrawer();renderAll();
+  }catch(err){
+    fail(err);if(ultima)S.period=periodOf(ultima);
+    if(S.importItens.length)montarImport();
+    $('#impMsg').textContent=(feitos?feitos+' já foram lançados. ':'')+'Parou em "'+S.importItens[0].servico+'": '+(err.message||'erro');
+  }
+}
+$('#btnColar').addEventListener('click',()=>abrirImport());
+$('#btnPromptCfg').addEventListener('click',()=>copiarTexto(PROMPT_IA,'Prompt copiado.'));
+$('#promptTxt').textContent=PROMPT_IA;
+// Cmd+V em qualquer lugar da página (fora de campos) com um bloco da IA abre a revisão direto.
+document.addEventListener('paste',ev=>{
+  if(ev.target.closest&&ev.target.closest('input,textarea,select'))return;
+  const t=ev.clipboardData?ev.clipboardData.getData('text'):'';
+  if(/LAN[ÇC]AMENTO\s+JTC/i.test(t)){ev.preventDefault();abrirImport(t);}
+});
+
 /* ---------- teclado ---------- */
 document.addEventListener('keydown',ev=>{
   const digitando=ev.target.closest&&ev.target.closest('input,textarea,select,[contenteditable]');
@@ -1046,7 +1227,7 @@ S.conn=loadConn();
 irPara(location.hash.slice(1)||'lancamentos');
 if(S.conn)refresh(true);else abrirConn();
 // Não atualiza sozinho enquanto alguém escreve (formulário, comentário, divergência): o redesenho apagaria o texto.
-const typing=()=>!$('#connModal').hidden||(!!S.drawer&&(S.drawer.tipo==='form'||$$('#drawer textarea').some(t=>t.value.trim()||t===document.activeElement)));
+const typing=()=>!$('#connModal').hidden||(!!S.drawer&&(S.drawer.tipo==='form'||S.drawer.tipo==='import'||$$('#drawer textarea').some(t=>t.value.trim()||t===document.activeElement)));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!typing())refresh(true);});
 setInterval(()=>{if(document.visibilityState==='visible'&&!typing())refresh(true);},90000);
 })();

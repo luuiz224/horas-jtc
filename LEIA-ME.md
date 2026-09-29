@@ -41,6 +41,11 @@ São 39 lançamentos de 01/07 a 24/09 consolidados das várias versões das plan
 
 1. Luiz lança as horas em **Lançar horas** (ou tecla `N`). Formatos: `2h30`, `2:30`, `2,5` ou `45min`; a página mostra como entendeu.
    **Salvar e lançar outro** deixa o formulário aberto para o próximo.
+   **Colar da IA**: no fim de qualquer conversa (Claude, ChatGPT, com ou sem modo code), cole o prompt do botão **Copiar prompt**
+   (também em Configuração). Copie a resposta da IA e cole na página com **Cmd+V** em qualquer lugar, ou pelo botão **Colar da IA**.
+   A página lê um ou vários blocos `=== LANÇAMENTO JTC ===`, mostra tudo para revisar (horas em branco ficam marcadas,
+   repetidos são avisados) e lança de uma vez. Para pular o passo do prompt, deixe o texto dele nas instruções de um Projeto
+   do Claude ou nas instruções personalizadas do ChatGPT e peça só "gera o lançamento".
 2. Wilson clica em **Conferir** direto na linha, ou abre o lançamento e usa **Apontar divergência** com o motivo escrito.
    No painel do lançamento ficam a descrição completa, a conversa e o histórico de alterações.
 3. Com tudo conferido: **Baixar XLSX** (mesmo modelo da planilha da JTC) ou **Copiar** para colar no Excel.
