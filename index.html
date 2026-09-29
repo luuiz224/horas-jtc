@@ -526,7 +526,7 @@ textarea.inp.prompt{font-family:var(--f-mono);font-size:.8rem;line-height:1.6;mi
         <section class="frame">
           <div class="frame-head"><div class="frame-titulo"><span data-ic="sparkle"></span>Prompt para a IA <small id="promptOrigem"></small></div><button class="btn btn-sm" id="btnPromptCfg"><span data-ic="copy" data-sz="14"></span>Copiar prompt</button></div>
           <div class="frame-corpo">
-            <p class="hint" style="margin-bottom:.7rem">Cole no fim de qualquer conversa (Claude, ChatGPT…). Se quiser pular esse passo, coloque este texto nas instruções de um Projeto do Claude ou nas instruções personalizadas do ChatGPT e peça só "gera o lançamento".</p>
+            <p class="hint" style="margin-bottom:.7rem">Cada pessoa tem o seu: começa no padrão e, se você editar, fica salvo só neste navegador (no celular, edite lá também). Cole no fim de qualquer conversa (Claude, ChatGPT…) ou deixe nas instruções de um Projeto do Claude / instruções personalizadas do ChatGPT e peça só "gera o lançamento".</p>
             <textarea class="inp prompt" id="promptTxt" spellcheck="false" maxlength="8000" aria-label="Prompt para a IA"></textarea>
             <div class="prompt-acoes"><span class="form-msg" id="promptMsg"></span>
               <button class="btn btn-ghost" type="button" id="btnPromptPadrao"><span data-ic="undo" data-sz="14"></span>Restaurar padrão</button>
@@ -1260,18 +1260,17 @@ async function salvarImport(){
   }
 }
 $('#btnColar').addEventListener('click',()=>abrirImport());
-/* Prompt editável: salvo na aba Config da planilha (vale em todo aparelho e para os dois).
-   Se o Apps Script ainda for da versão antiga, cai para o navegador e avisa. */
+/* Prompt editável: cada pessoa ajusta o seu, salvo só neste navegador. Sem edição, vale o padrão acima. */
 const LS_PROMPT='horasjtc.prompt';
 function promptLocal(){try{return localStorage.getItem(LS_PROMPT)||'';}catch(e){return '';}}
-function promptAtual(){return S.cfg.prompt||promptLocal()||PROMPT_IA;}
+function promptAtual(){return promptLocal()||PROMPT_IA;}
 const MARCAS=[/={2,}\s*LAN[ÇC]AMENTO\s+JTC\s*={2,}/i,/={2,}\s*FIM\s*={2,}/i];
 function renderPrompt(){
   const ta=$('#promptTxt');
   if(!S.promptSujo&&document.activeElement!==ta)ta.value=promptAtual();
-  $('#promptOrigem').textContent=S.cfg.prompt?'· personalizado, salvo na planilha':promptLocal()?'· personalizado, só neste navegador':'· padrão';
-  $('#btnPromptSalvar').disabled=!S.promptSujo||!canWrite()||!!S.busy;
-  $('#btnPromptPadrao').disabled=ta.value.trim()===PROMPT_IA.trim();
+  $('#promptOrigem').textContent=promptLocal()?'· o seu, salvo neste navegador':'· padrão';
+  $('#btnPromptSalvar').disabled=!S.promptSujo;
+  $('#btnPromptPadrao').disabled=ta.value.trim()===PROMPT_IA.trim()&&!promptLocal();
 }
 $('#promptTxt').addEventListener('input',ev=>{
   S.promptSujo=ev.target.value!==promptAtual();
@@ -1279,24 +1278,16 @@ $('#promptTxt').addEventListener('input',ev=>{
   const m=$('#promptMsg');m.className='form-msg';m.textContent=faltam?'Mantenha as linhas "=== LANÇAMENTO JTC ===" e "=== FIM ===": é por elas que a página lê a resposta da IA.':'';
   renderPrompt();
 });
-$('#btnPromptPadrao').addEventListener('click',()=>{$('#promptTxt').value=PROMPT_IA;$('#promptTxt').dispatchEvent(new Event('input'));
-  const m=$('#promptMsg');m.className='form-msg ok';m.textContent='Texto padrão colocado. Clique em Salvar prompt para aplicar.';});
-$('#btnPromptSalvar').addEventListener('click',async()=>{
+$('#btnPromptPadrao').addEventListener('click',()=>{
+  try{localStorage.removeItem(LS_PROMPT);}catch(e){}
+  S.promptSujo=false;$('#promptTxt').value=PROMPT_IA;$('#promptMsg').textContent='';renderPrompt();toast('Voltou para o prompt padrão.','undo');
+});
+$('#btnPromptSalvar').addEventListener('click',()=>{
   const v=$('#promptTxt').value.trim(),m=$('#promptMsg');
   if(v&&!MARCAS.every(r=>r.test(v))){m.className='form-msg';m.textContent='Não salvei: o prompt precisa manter as linhas "=== LANÇAMENTO JTC ===" e "=== FIM ===".';return;}
-  const novo=(!v||v===PROMPT_IA.trim())?'':v;
-  try{
-    await api('config',{prompt:novo});
-    if((S.cfg.prompt||'')!==novo)throw {code:'antigo'};
-    try{localStorage.removeItem(LS_PROMPT);}catch(e){}
-    S.promptSujo=false;toast(novo?'Prompt salvo na planilha. Vale em todos os aparelhos.':'Voltou para o prompt padrão.','check');
-  }catch(e){
-    if(e.code==='auth'||e.code==='rede'||e.code==='noconn'||e.code==='conflict'){fail(e);return;}
-    // Apps Script antigo não conhece o campo "prompt": guarda neste navegador.
-    try{novo?localStorage.setItem(LS_PROMPT,novo):localStorage.removeItem(LS_PROMPT);}catch(_){}
-    S.promptSujo=false;toast('Salvo só neste navegador. Atualize o Apps Script para valer em todos os aparelhos.','alert');
-  }
-  m.textContent='';renderPrompt();
+  try{(!v||v===PROMPT_IA.trim())?localStorage.removeItem(LS_PROMPT):localStorage.setItem(LS_PROMPT,v);}
+  catch(e){m.textContent='Este navegador não deixou salvar (modo privado?).';return;}
+  S.promptSujo=false;m.textContent='';renderPrompt();toast(promptLocal()?'Prompt salvo neste navegador.':'Voltou para o prompt padrão.','check');
 });
 $('#btnPromptCfg').addEventListener('click',()=>copiarTexto(promptAtual(),'Prompt copiado.'));
 // Cmd+V em qualquer lugar da página (fora de campos) com um bloco da IA abre a revisão direto.
