@@ -328,7 +328,9 @@ tfoot td.n{font-family:var(--f-mono)}
 .imp-top{display:flex;justify-content:space-between;align-items:center;gap:.5rem}
 .imp-top b{font-size:.84rem}
 .inp.falta{border-color:var(--warning);box-shadow:0 0 0 3px var(--warning-dim)}
-.prompt{white-space:pre-wrap;font-family:var(--f-mono);font-size:.78rem;line-height:1.55;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.9rem 1rem;max-height:320px;overflow:auto}
+textarea.inp.prompt{font-family:var(--f-mono);font-size:.8rem;line-height:1.6;min-height:380px;padding:.9rem 1rem}
+.prompt-acoes{display:flex;align-items:center;gap:.5rem;justify-content:flex-end;flex-wrap:wrap;margin-top:.75rem}
+.form-msg.ok{color:var(--success)}
 
 /* ── Modal ── */
 .modal{position:fixed;inset:0;display:grid;place-items:center;z-index:70;padding:16px}
@@ -522,10 +524,13 @@ tfoot td.n{font-family:var(--f-mono)}
           <div class="frame-corpo"><div class="cfg-linha"><p id="cfgConn"></p><button class="btn" id="btnConn2">Alterar conexão</button></div></div>
         </section>
         <section class="frame">
-          <div class="frame-head"><div class="frame-titulo"><span data-ic="sparkle"></span>Prompt para a IA <small>· o mesmo do botão "Colar da IA"</small></div><button class="btn btn-sm" id="btnPromptCfg"><span data-ic="copy" data-sz="14"></span>Copiar prompt</button></div>
+          <div class="frame-head"><div class="frame-titulo"><span data-ic="sparkle"></span>Prompt para a IA <small id="promptOrigem"></small></div><button class="btn btn-sm" id="btnPromptCfg"><span data-ic="copy" data-sz="14"></span>Copiar prompt</button></div>
           <div class="frame-corpo">
             <p class="hint" style="margin-bottom:.7rem">Cole no fim de qualquer conversa (Claude, ChatGPT…). Se quiser pular esse passo, coloque este texto nas instruções de um Projeto do Claude ou nas instruções personalizadas do ChatGPT e peça só "gera o lançamento".</p>
-            <pre class="prompt" id="promptTxt"></pre>
+            <textarea class="inp prompt" id="promptTxt" spellcheck="false" maxlength="8000" aria-label="Prompt para a IA"></textarea>
+            <div class="prompt-acoes"><span class="form-msg" id="promptMsg"></span>
+              <button class="btn btn-ghost" type="button" id="btnPromptPadrao"><span data-ic="undo" data-sz="14"></span>Restaurar padrão</button>
+              <button class="btn btn-primary" type="button" id="btnPromptSalvar"><span data-ic="check" data-sz="15"></span>Salvar prompt</button></div>
           </div>
         </section>
         <section class="frame">
@@ -856,6 +861,7 @@ function renderCfg(){
     $('#cValor').value=String(S.cfg.valorHora??'').replace('.',',');$('#cArq').value=S.cfg.arquivo||'';
   }
   $('#cfgForm button').disabled=!canWrite()||!!S.busy;
+  renderPrompt();
   $('#cfgConn').innerHTML=S.conn?'Conectado como <b>'+esc(S.conn.nome)+'</b><small>'+esc(S.conn.url.replace(/(\/s\/.{8}).*(.{6}\/exec)$/,'$1…$2'))+'</small>':'Ainda não conectado neste navegador.';
 }
 
@@ -1201,7 +1207,7 @@ function montarImport(){
         '<textarea class="inp" id="impTxt" placeholder="=== LANÇAMENTO JTC ===&#10;Data: 29/09/2026&#10;Horas: 2h&#10;Serviço: …&#10;…&#10;=== FIM ==="></textarea><span class="form-msg" id="impMsg"></span></div></div>';
     $('#impTxt').value=S.importTxt||'';
     $('#drawerFoot').innerHTML='<button type="button" class="btn btn-ghost" id="impCancel">Cancelar</button><button type="button" class="btn btn-primary" id="impLer">'+ic('check',15)+'Ler lançamentos</button>';
-    $('#impPrompt').addEventListener('click',()=>copiarTexto(PROMPT_IA,'Prompt copiado. Cole no fim da conversa com a IA.'));
+    $('#impPrompt').addEventListener('click',()=>copiarTexto(promptAtual(),'Prompt copiado. Cole no fim da conversa com a IA.'));
     $('#impLer').addEventListener('click',()=>{const t=$('#impTxt').value;const l=parseChat(t);S.importTxt=t;
       if(!l.length){$('#impMsg').textContent='Não achei nenhum bloco "=== LANÇAMENTO JTC ===" nesse texto. Confira se copiou a resposta inteira da IA.';return;}
       S.importItens=l;montarImport();});
@@ -1254,8 +1260,45 @@ async function salvarImport(){
   }
 }
 $('#btnColar').addEventListener('click',()=>abrirImport());
-$('#btnPromptCfg').addEventListener('click',()=>copiarTexto(PROMPT_IA,'Prompt copiado.'));
-$('#promptTxt').textContent=PROMPT_IA;
+/* Prompt editável: salvo na aba Config da planilha (vale em todo aparelho e para os dois).
+   Se o Apps Script ainda for da versão antiga, cai para o navegador e avisa. */
+const LS_PROMPT='horasjtc.prompt';
+function promptLocal(){try{return localStorage.getItem(LS_PROMPT)||'';}catch(e){return '';}}
+function promptAtual(){return S.cfg.prompt||promptLocal()||PROMPT_IA;}
+const MARCAS=[/={2,}\s*LAN[ÇC]AMENTO\s+JTC\s*={2,}/i,/={2,}\s*FIM\s*={2,}/i];
+function renderPrompt(){
+  const ta=$('#promptTxt');
+  if(!S.promptSujo&&document.activeElement!==ta)ta.value=promptAtual();
+  $('#promptOrigem').textContent=S.cfg.prompt?'· personalizado, salvo na planilha':promptLocal()?'· personalizado, só neste navegador':'· padrão';
+  $('#btnPromptSalvar').disabled=!S.promptSujo||!canWrite()||!!S.busy;
+  $('#btnPromptPadrao').disabled=ta.value.trim()===PROMPT_IA.trim();
+}
+$('#promptTxt').addEventListener('input',ev=>{
+  S.promptSujo=ev.target.value!==promptAtual();
+  const faltam=!MARCAS.every(r=>r.test(ev.target.value));
+  const m=$('#promptMsg');m.className='form-msg';m.textContent=faltam?'Mantenha as linhas "=== LANÇAMENTO JTC ===" e "=== FIM ===": é por elas que a página lê a resposta da IA.':'';
+  renderPrompt();
+});
+$('#btnPromptPadrao').addEventListener('click',()=>{$('#promptTxt').value=PROMPT_IA;$('#promptTxt').dispatchEvent(new Event('input'));
+  const m=$('#promptMsg');m.className='form-msg ok';m.textContent='Texto padrão colocado. Clique em Salvar prompt para aplicar.';});
+$('#btnPromptSalvar').addEventListener('click',async()=>{
+  const v=$('#promptTxt').value.trim(),m=$('#promptMsg');
+  if(v&&!MARCAS.every(r=>r.test(v))){m.className='form-msg';m.textContent='Não salvei: o prompt precisa manter as linhas "=== LANÇAMENTO JTC ===" e "=== FIM ===".';return;}
+  const novo=(!v||v===PROMPT_IA.trim())?'':v;
+  try{
+    await api('config',{prompt:novo});
+    if((S.cfg.prompt||'')!==novo)throw {code:'antigo'};
+    try{localStorage.removeItem(LS_PROMPT);}catch(e){}
+    S.promptSujo=false;toast(novo?'Prompt salvo na planilha. Vale em todos os aparelhos.':'Voltou para o prompt padrão.','check');
+  }catch(e){
+    if(e.code==='auth'||e.code==='rede'||e.code==='noconn'||e.code==='conflict'){fail(e);return;}
+    // Apps Script antigo não conhece o campo "prompt": guarda neste navegador.
+    try{novo?localStorage.setItem(LS_PROMPT,novo):localStorage.removeItem(LS_PROMPT);}catch(_){}
+    S.promptSujo=false;toast('Salvo só neste navegador. Atualize o Apps Script para valer em todos os aparelhos.','alert');
+  }
+  m.textContent='';renderPrompt();
+});
+$('#btnPromptCfg').addEventListener('click',()=>copiarTexto(promptAtual(),'Prompt copiado.'));
 // Cmd+V em qualquer lugar da página (fora de campos) com um bloco da IA abre a revisão direto.
 document.addEventListener('paste',ev=>{
   if(ev.target.closest&&ev.target.closest('input,textarea,select'))return;
