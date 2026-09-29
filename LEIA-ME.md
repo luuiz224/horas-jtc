@@ -39,11 +39,15 @@ São 39 lançamentos de 01/07 a 24/09 consolidados das várias versões das plan
 
 ## Fluxo da quinzena
 
-1. Luiz lança as horas no dia (formato `2h30`, `2:30`, `2,5` ou `45min`; a página mostra como entendeu).
-2. Wilson abre a quinzena e clica em **Conferir** em cada linha, ou em **Divergência** com o motivo escrito.
-3. Com tudo conferido: **Baixar XLSX (formato JTC)** (mesmas colunas da planilha antiga) ou **Copiar para Excel**.
+1. Luiz lança as horas em **Lançar horas** (ou tecla `N`). Formatos: `2h30`, `2:30`, `2,5` ou `45min`; a página mostra como entendeu.
+   **Salvar e lançar outro** deixa o formulário aberto para o próximo.
+2. Wilson clica em **Conferir** direto na linha, ou abre o lançamento e usa **Apontar divergência** com o motivo escrito.
+   No painel do lançamento ficam a descrição completa, a conversa e o histórico de alterações.
+3. Com tudo conferido: **Baixar XLSX** (mesmo modelo da planilha da JTC) ou **Copiar** para colar no Excel.
 4. **Marcar como enviada**: horas, datas e exclusões daquela quinzena ficam travadas.
    Se precisar corrigir, **Reabrir quinzena**. Fica registrado quem reabriu e o que mudou depois do envio.
 
+Atalhos: `N` novo lançamento, `←`/`→` troca de quinzena, `Esc` fecha o painel. Tema claro/escuro no botão da barra de cima ou em Configuração.
+
 Quinzenas: 1ª = dias 01–15, 2ª = dia 16 até o fim do mês, sempre pela data do lançamento.
-A página atualiza sozinha a cada 90 s e quando você volta para a aba. Se duas pessoas editarem a mesma linha ao mesmo tempo, a segunda é avisada e ninguém sobrescreve ninguém.
+A página atualiza sozinha a cada 90 s e quando você volta para a aba (menos enquanto alguém está digitando). Se duas pessoas editarem a mesma linha ao mesmo tempo, a segunda é avisada e ninguém sobrescreve ninguém.
