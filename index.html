@@ -1424,7 +1424,7 @@ $('#banners').addEventListener('click',ev=>{
 /* ---------- colar da IA ----------
    Funciona em qualquer chat (Claude, ChatGPT, modo code ou não): a página guarda o prompt,
    a IA devolve blocos num formato fixo e a página lê, mostra para revisar e lança. */
-const PROMPT_IA=`Com base no que fizemos nesta conversa, gere o lançamento de horas para a JTC exatamente neste formato, sem nenhum texto antes ou depois:
+const PROMPT_IA=`Com base no que fizemos nesta conversa, escreva o lançamento de horas para a JTC exatamente neste formato, sem nenhum texto antes ou depois:
 
 === LANÇAMENTO JTC ===
 Data: DD/MM/AAAA
@@ -1435,13 +1435,27 @@ Solicitante: Will
 Observações:
 === FIM ===
 
-Regras:
+Como preencher:
 - Data: o dia em que o trabalho foi feito. Se não souber, use a data de hoje.
-- Horas: só preencha se eu tiver dito quanto tempo levou (ex.: 2h30). Senão, deixe em branco que eu preencho.
-- Serviço: título curto do problema ou da entrega, até 8 palavras, sem ponto final.
+- Horas: só preencha se eu tiver dito quanto tempo levou (ex.: 2h30). Senão, deixe em branco.
+- Serviço: o problema ou a entrega do jeito que alguém escreveria num chamado, curto e sem ponto final. Ex.: "Pedido sem botão de faturar", "Boletos sem dar baixa".
 - Status: Concluído, Em andamento ou Pendente.
-- Observações: texto corrido em primeira pessoa e no passado, 3 a 6 frases, em linguagem simples para quem não é técnico. Diga qual era o problema (com número de pedido, registro ou script quando houver), a causa, o que eu fiz para resolver e como testei. Sem markdown, sem listas, sem emojis.
-- Se na conversa houve mais de um trabalho diferente ou mais de um dia, gere um bloco para cada um.`;
+
+Como escrever as Observações (isso é o mais importante):
+- Escreva como eu contando pra um colega o que eu fiz, não como relatório. Primeira pessoa, passado, português do dia a dia.
+- Comece direto pelo problema ou pelo que eu fiz. Sem introdução e sem frase de fechamento resumindo tudo.
+- Frases curtas, uma ideia por frase. Pode usar "pra", "deu", "achei", "subi", "mexi".
+- Use os nomes reais: número do pedido ou registro, nome do script, do campo e do botão como aparecem no NetSuite.
+- Conte o que estava errado, por que, o que eu mudei e, se eu testei, como foi o teste. Só o que aconteceu de fato; não invente teste nem número.
+- Tamanho conforme o trabalho: coisa pequena em 1 ou 2 frases, coisa grande em até 6.
+- Não use: "garantir", "assegurar", "otimizar", "robusto", "eficiente", "solução", "fundamental", "crucial", "além disso", "dessa forma", "com isso", "vale ressaltar", "a fim de", "visando", "foi realizado", "foi implementado". Nada de travessão (—), listas, negrito, markdown ou emoji.
+
+Exemplos do tom que eu quero (é só o jeito de escrever, não copie o conteúdo):
+"Troquei a cor da letra do botão EDITAR OBS pra fonte escura em negrito."
+"Dos 515 desatualizados, precisava saber em quais dá pra mexer. Fui atrás da pasta onde cada arquivo está instalado no File Cabinet e subi a hierarquia até achar o bundle de origem. Deu 396 de fornecedor e 120 nossos."
+"O botão Mudar Subsidiária do memorando 3548 dava erro de taxa de conversão, mas o erro não aparecia na tela. O problema só acontecia com usuários da Controladora, porque o script não definia a moeda. Ajustei o script pra usar sempre Real com taxa 1 e mostrar o erro na tela. Testei e o crédito de R$ 12.802,50 foi pra JTC 02 SP."
+
+Se na conversa houve mais de um trabalho diferente ou mais de um dia, gere um bloco para cada um.`;
 async function copiarTexto(txt,msg){
   try{await navigator.clipboard.writeText(txt);toast(msg,'copy');}
   catch(e){const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
