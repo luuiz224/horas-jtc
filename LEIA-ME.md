@@ -61,6 +61,12 @@ O valor usa o valor da hora atual da Configuração.
 tracejados em amarelo na régua e aparecem num aviso no topo; clicar no dia abre o formulário com a data preenchida.
 Feriado ou folga: "Não trabalhei nesses dias" para de avisar (fica salvo no navegador). Só conta a partir do primeiro lançamento.
 
+**Buscar em tudo** (🔍 na barra de cima, `/` ou Cmd+K): procura em todas as quinzenas, no serviço, observações,
+solicitante e comentários, sem diferenciar acento; mostra total de horas e valor do que achou. Clique leva ao lançamento.
+
+**Meta da quinzena** (Configuração, salva no navegador): barra de EXP no resumo com quanto falta e o ritmo por dia útil
+restante; ao bater a meta aparece LEVEL UP.
+
 Atalhos: `N` novo lançamento, `←`/`→` troca de quinzena, `Esc` fecha o painel. Tema claro/escuro no botão da barra de cima ou em Configuração.
 
 Quinzenas: 1ª = dias 01–15, 2ª = dia 16 até o fim do mês, sempre pela data do lançamento.

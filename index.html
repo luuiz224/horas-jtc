@@ -714,7 +714,7 @@ textarea.inp.prompt{background:#000;color:#5bd16a;border-color:var(--ink)}
 .kpi-ic{color:var(--accent);display:grid}
 .kpis-cards .kpi-k{font-size:.8rem;letter-spacing:.1em}
 .kpi-pct{margin-left:auto;font-family:var(--f-lcd);font-size:1.3rem;line-height:1;color:var(--success)}
-.kpis-cards .kpi-v{font-size:3rem;margin:.55rem 0 .25rem}
+.kpis-cards .kpi-v{font-size:clamp(2rem,2.4vw,3rem);margin:.55rem 0 .25rem;white-space:nowrap}
 .kpis-cards .kpi-s{font-size:.76rem;max-width:calc(100% - 90px)}
 .kpi-deco{position:absolute;right:1rem;bottom:.9rem;color:var(--accent);line-height:0}
 .kpi-deco svg{display:block}
@@ -738,6 +738,38 @@ body{background-image:var(--pix),conic-gradient(var(--chk) 25%,transparent 0 50%
 body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:radial-gradient(45% 55% at 100% 0%,var(--brilho),transparent 70%),radial-gradient(40% 50% at 0% 100%,var(--brilho),transparent 70%)}
 @media (prefers-reduced-motion:reduce){body{animation:none}}
+
+/* ── Busca em tudo ── */
+.busca-g{display:block;margin-bottom:.2rem}
+.busca-g input{width:100%;height:44px;font-size:.95rem}
+mark{background:var(--accent);color:#fff;padding:0 1px}
+.busca-resumo{display:flex;flex-wrap:wrap;gap:.3rem .6rem;align-items:baseline;padding:.7rem .85rem;margin:.8rem 0 .2rem;background:#000;color:#f1ede0;border:2px solid var(--ink);box-shadow:3px 3px 0 var(--accent);font-size:.85rem}
+.busca-resumo b{font-family:var(--f-lcd);font-size:1.3rem;font-weight:400;color:var(--success)}
+.busca-resumo span{color:#8c877b;font-size:.76rem;width:100%}
+.busca-grupo{margin-top:.9rem;border:2px solid var(--border-strong)}
+.busca-gh{display:flex;justify-content:space-between;padding:.4rem .7rem;background:var(--frame);color:var(--frame-txt);font-family:var(--f-title);text-transform:uppercase;letter-spacing:.05em;font-size:.78rem}
+.busca-item{display:grid;grid-template-columns:70px minmax(0,1fr) auto;gap:.7rem;align-items:start;width:100%;text-align:left;padding:.6rem .7rem;border-top:1px dashed var(--line);background:var(--surface);transition:background .1s}
+.busca-item:hover,.busca-item:focus-visible{background:var(--surface-hover)}
+.bi-data{font-family:var(--f-lcd);font-size:1.05rem;color:var(--text-muted)}
+.bi-txt b{display:block;font-family:var(--f-title);font-weight:500;font-size:.92rem}
+.bi-txt small{display:block;color:var(--text-muted);font-size:.76rem;line-height:1.45;margin-top:2px}
+.bi-h{font-family:var(--f-lcd);font-size:1.25rem}
+
+/* ── Meta da quinzena: barra de EXP ── */
+.meta-wrap{padding:0 10px 10px}
+.meta{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border:2px solid var(--border-strong);background:var(--surface);box-shadow:3px 3px 0 var(--ink)}
+.exp-lbl{font-family:var(--f-title);font-weight:700;font-size:.75rem;letter-spacing:.06em;color:#000;background:var(--info);padding:1px 5px;border:2px solid var(--ink)}
+.exp-bar{flex:1;height:16px;padding:2px;background:#000;border:2px solid var(--ink)}
+.exp-bar span{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--info) 0 6px,rgba(0,0,0,.35) 6px 8px);transform-origin:left;animation:crescer .6s steps(8) both}
+.exp-num{font-family:var(--f-lcd);font-size:1.35rem;white-space:nowrap}
+.meta.up{border-color:var(--warning)}
+.meta.up .exp-bar span{background:repeating-linear-gradient(90deg,var(--warning) 0 6px,rgba(0,0,0,.35) 6px 8px)}
+.meta-sub{font-size:.76rem;color:var(--text-muted);margin-top:.45rem;padding:0 .2rem}
+.meta-sub b{color:var(--text);font-weight:600}
+.lvl{font-family:var(--f-title);font-weight:700;color:var(--warning);animation:piscar 1s steps(1) infinite;margin-right:.3rem}
+.meta-vazia{display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--text-muted);text-decoration:underline;text-underline-offset:3px;padding:.2rem}
+.meta-vazia:hover{color:var(--accent-text)}
+@media (max-width:640px){.busca-item{grid-template-columns:minmax(0,1fr) auto}.bi-data{grid-column:1/-1}#btnTema{display:none}}
 
 /* ── Pokémon nos cantos (sprites animados de Black/White, carregados do PokeAPI) ── */
 .poke-canto{margin-top:auto;display:flex;justify-content:center;align-items:flex-end;padding:.6rem 0 .2rem;position:relative}
@@ -807,6 +839,7 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
       <button class="icon-btn menu-btn" id="btnMenu" aria-label="Menu" data-ic="menu" data-sz="18"></button>
       <h1 id="viewTitle">Lançamentos</h1>
       <img class="poke-tela" id="pokeTela" alt="" hidden onerror="this.hidden=true">
+      <button class="icon-btn" id="btnBusca" title="Buscar em todos os lançamentos (/ ou Cmd+K)" aria-label="Buscar em tudo" data-ic="search"></button>
       <button class="icon-btn" id="btnTema" title="Alternar tema claro/escuro" aria-label="Alternar tema"></button>
       <button class="icon-btn" id="btnReload" title="Buscar o que o outro lançou" aria-label="Atualizar" data-ic="refresh"></button>
       <button class="btn" id="btnColar" title="Colar lançamento gerado no chat da IA (ou Cmd+V na página)"><span data-ic="sparkle"></span><span>Colar da IA</span></button>
@@ -840,6 +873,7 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
         <section class="frame">
           <div class="frame-head"><div class="frame-titulo"><span data-ic="chart"></span>Resumo da quinzena</div></div>
           <div class="frame-grade kpis-cards" id="kpis"></div>
+          <div class="meta-wrap" id="meta"></div>
         </section>
 
         <section class="frame">
@@ -915,6 +949,16 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
         <section class="frame">
           <div class="frame-head"><div class="frame-titulo"><span data-ic="link"></span>Conexão com a planilha</div></div>
           <div class="frame-corpo"><div class="cfg-linha"><p id="cfgConn"></p><button class="btn" id="btnConn2">Alterar conexão</button></div></div>
+        </section>
+        <section class="frame">
+          <div class="frame-head"><div class="frame-titulo"><span data-ic="flag"></span>Meta da quinzena <small>· só neste navegador</small></div></div>
+          <div class="frame-corpo">
+            <form class="cfg-grid" id="metaForm">
+              <label class="campo"><span>Meta de horas por quinzena</span><input class="inp num" id="metaHoras" placeholder="Ex.: 40, 40h ou 37h30" autocomplete="off"></label>
+              <span class="hint" id="metaEquiv"></span>
+              <div class="acoes" style="justify-content:flex-start"><button class="btn btn-ghost" type="button" id="metaLimpar">Sem meta</button><button class="btn btn-primary" type="submit">Salvar meta</button></div>
+            </form>
+          </div>
         </section>
         <section class="frame">
           <div class="frame-head"><div class="frame-titulo"><span data-ic="sparkle"></span>Prompt para a IA <small id="promptOrigem"></small></div><button class="btn btn-sm" id="btnPromptCfg"><span data-ic="copy" data-sz="14"></span>Copiar prompt</button></div>
@@ -1207,6 +1251,7 @@ function renderQuinzena(){
     '<div class="frame-corpo kpi k-conf"><div class="kpi-top"><span class="kpi-ic">'+ic('check',20)+'</span><span class="kpi-k">Conferência</span><span class="kpi-pct">'+pct+'%</span></div><div class="kpi-v">'+ok+'<small>de '+list.length+'</small></div>'+
       '<div class="hp"><span class="hp-lbl">HP</span><div class="prog">'+(ok?'<span class="c-ok" style="width:'+(ok/n*100)+'%"></span>':'')+(pend?'<span class="c-pend" style="width:'+(pend/n*100)+'%"></span>':'')+(div?'<span class="c-div" style="width:'+(div/n*100)+'%"></span>':'')+'</div></div>'+
       '<div class="prog-leg"><span><i class="c-ok"></i>'+ok+' ok</span><span><i class="c-pend"></i>'+pend+' a conferir</span>'+(div?'<span style="color:var(--danger)"><i class="c-div"></i>'+div+' divergência'+(div>1?'s':'')+'</span>':'')+'</div></div>';
+  renderMeta(key,tot,vh);
 
   const today=todayISO(),byDay={};list.forEach(e=>byDay[e.data]=(byDay[e.data]||0)+e.min);
   const max=Math.max(8*60,...Object.values(byDay)),faltam=new Set(diasSemLanc(key));let h='';
@@ -1292,7 +1337,7 @@ function renderCfg(){
     $('#cValor').value=String(S.cfg.valorHora??'').replace('.',',');$('#cArq').value=S.cfg.arquivo||'';
   }
   $('#cfgForm button').disabled=!canWrite()||!!S.busy;
-  renderPrompt();
+  renderPrompt();renderMetaCfg();
   $('#cfgConn').innerHTML=S.conn?'Conectado como <b>'+esc(S.conn.nome)+'</b><small>'+esc(S.conn.url.replace(/(\/s\/.{8}).*(.{6}\/exec)$/,'$1…$2'))+'</small>':'Ainda não conectado neste navegador.';
 }
 
@@ -1304,6 +1349,7 @@ $('#drawerScrim').addEventListener('click',()=>{if(!formSujo()||confirm('Descart
 
 function renderDrawer(novo){
   if(!S.drawer)return;
+  if(S.drawer.tipo==='busca'){if(novo)montarBusca();else renderBuscaRes();return;}
   if(S.drawer.tipo==='import'){if(novo)montarImport();else if($('#impSalvar'))$('#impSalvar').disabled=!canWrite()||!!S.busy;return;}
   if(S.drawer.tipo==='form'){if(novo)montarForm();else{const d=!canWrite()||!!S.busy;$('#fSave').disabled=d;if($('#fSaveMais'))$('#fSaveMais').disabled=d;}return;}
   const e=entry(S.drawer.id);if(!e){fecharDrawer();return;}
@@ -1836,12 +1882,87 @@ $('#btnRelCopy').addEventListener('click',()=>{
 });
 $('#btnRelXlsx').addEventListener('click',()=>{const r=S.rel;baixarXlsx(relEntries(),(S.cfg.arquivo||'Controle_de_Horas').replace(/[^\w\-]+/g,'_')+'_'+r.de+'_a_'+r.ate);});
 
+/* ---------- busca em todos os lançamentos ----------
+   Olha todas as quinzenas: serviço, observações, solicitante e comentários; sem acento e com todas as palavras. */
+function marcar(txt,termos){
+  // Destaca os termos no texto original mesmo quando a busca foi sem acento (mapeia caractere a caractere).
+  const t=String(txt||''),base=[...t].map(c=>norm(c)||c).join('');
+  const marcas=new Array(t.length).fill(false);
+  termos.forEach(q=>{let i=base.indexOf(q);while(i>=0&&q){for(let k=i;k<i+q.length&&k<t.length;k++)marcas[k]=true;i=base.indexOf(q,i+q.length);}});
+  let out='',dentro=false;[...t].forEach((c,i)=>{if(marcas[i]&&!dentro){out+='<mark>';dentro=true;}if(!marcas[i]&&dentro){out+='</mark>';dentro=false;}out+=esc(c);});
+  return out+(dentro?'</mark>':'');
+}
+function trecho(txt,termos){
+  const t=String(txt||'').replace(/\s+/g,' '),b=norm(t);let i=-1;termos.forEach(q=>{const j=b.indexOf(q);if(j>=0&&(i<0||j<i))i=j;});
+  if(i<0)return t.slice(0,160)+(t.length>160?'…':'');
+  const a=Math.max(0,i-70);return (a?'…':'')+t.slice(a,a+180)+(a+180<t.length?'…':'');
+}
+function resultadosBusca(q){
+  const termos=norm(q).split(/\s+/).filter(Boolean);if(!termos.length)return {termos,lista:[]};
+  const lista=S.entries.filter(e=>!e.excluido&&termos.every(x=>norm([e.servico,e.descricao,e.solicitante,(e.notas||[]).map(n=>n.txt).join(' ')].join(' ')).includes(x)))
+    .sort((a,b)=>a.data<b.data?1:a.data>b.data?-1:0);
+  return {termos,lista};
+}
+function abrirBusca(){abrirDrawer({tipo:'busca'});}
+function montarBusca(){
+  $('#drawerTit').innerHTML='Buscar em tudo<small>Todas as quinzenas · atalho / ou Cmd+K</small>';
+  $('#drawerBody').innerHTML='<label class="busca busca-g">'+ic('search',16)+'<input id="buscaG" type="search" placeholder="Ex.: wms, 1992074, memorando, jtc_ue_bloqueio" autocomplete="off"></label><div id="buscaRes"></div>';
+  $('#drawerFoot').innerHTML='<span class="hint">Enter abre o primeiro resultado · clique para ir até o lançamento</span>';
+  const inp=$('#buscaG');inp.value=S.buscaG||'';
+  inp.addEventListener('input',()=>{S.buscaG=inp.value;renderBuscaRes();});
+  inp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){const r=$('#buscaRes [data-ir]');if(r){ev.preventDefault();r.click();}}});
+  $('#buscaRes').onclick=ev=>{const r=ev.target.closest('[data-ir]');if(!r)return;const e=entry(r.dataset.ir);if(!e)return;
+    S.period=periodOf(e.data);S.filtro='todos';S.busca='';$('#busca').value='';if(location.hash!=='#lancamentos')location.hash='#lancamentos';irPara('lancamentos');abrirDrawer({tipo:'det',id:e.id});};
+  renderBuscaRes();setTimeout(()=>inp.focus(),60);
+}
+function renderBuscaRes(){
+  const el=$('#buscaRes');if(!el)return;
+  if(!S.loaded){el.innerHTML='<div class="vazio">Conecte à planilha para buscar.</div>';return;}
+  const {termos,lista}=resultadosBusca(S.buscaG||''),vh=Number(S.cfg.valorHora)||0;
+  if(!termos.length){el.innerHTML='<p class="hint" style="margin-top:.8rem">Digite uma palavra, número de pedido ou nome de script. Busca em '+S.entries.filter(e=>!e.excluido).length+' lançamentos de todas as quinzenas.</p>';return;}
+  if(!lista.length){el.innerHTML='<div class="vazio" style="margin-top:.8rem">'+snorlax()+'<div>Nada encontrado para "'+esc(S.buscaG)+'".</div></div>';return;}
+  const tot=sumMin(lista),grupos={};lista.forEach(e=>(grupos[periodOf(e.data)]=grupos[periodOf(e.data)]||[]).push(e));
+  const ks=Object.keys(grupos).sort().reverse(),mais=lista.length>150;
+  el.innerHTML='<div class="busca-resumo"><b>'+lista.length+'</b> lançamento'+(lista.length===1?'':'s')+' · <b>'+fmtHM(tot)+'</b> · <b>'+esc(fmtBRL(tot/60*vh))+'</b><span>'+fmtDate(lista[lista.length-1].data)+'/'+parts(lista[lista.length-1].data).y+' a '+fmtDate(lista[0].data)+'/'+parts(lista[0].data).y+' · '+ks.length+' quinzena'+(ks.length===1?'':'s')+'</span></div>'+
+    ks.map(k=>{const g=grupos[k].slice(0,mais?20:999);return '<div class="busca-grupo"><div class="busca-gh"><span>'+esc(periodLabel(k))+'</span><span class="num">'+grupos[k].length+' · '+fmtHM(sumMin(grupos[k]))+'</span></div>'+
+      g.map(e=>'<button class="busca-item" data-ir="'+e.id+'"><span class="bi-data">'+DIAS[wd(e.data)]+' '+fmtDate(e.data)+'</span><span class="bi-txt"><b>'+marcar(e.servico,termos)+'</b><small>'+marcar(trecho(e.descricao,termos),termos)+'</small></span><span class="bi-h">'+fmtHM(e.min)+'</span></button>').join('')+'</div>';}).join('');
+}
+
+/* ---------- meta da quinzena (barra de EXP) ----------
+   Meta em horas, salva só neste navegador. Mostra quanto falta e o ritmo por dia útil restante. */
+const LS_META='horasjtc.metaMin';
+function metaMin(){try{return Number(localStorage.getItem(LS_META))||0;}catch(e){return 0;}}
+function renderMeta(key,tot,vh){
+  const el=$('#meta');if(!el)return;const m=metaMin();
+  if(!m){el.innerHTML='<a class="meta-vazia" href="#config">'+ic('flag',14)+'Definir uma meta de horas para a quinzena</a>';return;}
+  const pct=Math.min(100,tot/m*100),falta=Math.max(0,m-tot),r=periodRange(key),hoje=todayISO();let uteis=0;
+  for(let d=r.a;d<=r.b;d++){const iso=r.y+'-'+pad(r.m)+'-'+pad(d);if(iso>=hoje&&!isWeekend(iso))uteis++;}
+  const up=tot>=m;
+  el.innerHTML='<div class="meta'+(up?' up':'')+'" title="Meta da quinzena: '+fmtHM(m)+'"><span class="exp-lbl">EXP</span><div class="exp-bar"><span style="width:'+pct.toFixed(1)+'%"></span></div><span class="exp-num">'+fmtHM(tot)+' / '+fmtHM(m)+'</span></div>'+
+    '<div class="meta-sub">'+(up?'<span class="lvl">★ LEVEL UP!</span> Meta batida'+(tot>m?', '+fmtHM(tot-m)+' acima':'')+'.':
+      '<b>'+Math.floor(pct)+'%</b> da meta · faltam <b>'+fmtHM(falta)+'</b> ('+esc(fmtBRL(falta/60*vh))+')'+(uteis?' · ritmo: <b>'+fmtHM(falta/uteis)+'</b> por dia útil nos '+uteis+' dia'+(uteis===1?'':'s')+' que restam':' · a quinzena já acabou'))+'</div>';
+}
+function renderMetaCfg(){
+  const m=metaMin(),vh=Number(S.cfg.valorHora)||0,inp=$('#metaHoras');
+  if(!S.metaSujo&&document.activeElement!==inp)inp.value=m?fmtHM(m):'';
+  const v=parseDur(inp.value);
+  $('#metaEquiv').textContent=v?'= '+fmtHM(v)+' por quinzena · '+fmtBRL(v/60*vh)+' a '+fmtBRL(vh)+'/h':m?'':'Sem meta definida.';
+}
+$('#metaHoras').addEventListener('input',()=>{S.metaSujo=true;renderMetaCfg();});
+$('#metaForm').addEventListener('submit',ev=>{ev.preventDefault();const v=parseDur($('#metaHoras').value);
+  if(!v||v<=0){toast('Meta inválida. Use 40, 40h ou 37h30.','alert');return;}
+  try{localStorage.setItem(LS_META,String(v));}catch(e){}S.metaSujo=false;renderMetaCfg();toast('Meta salva: '+fmtHM(v)+' por quinzena','flag');});
+$('#metaLimpar').addEventListener('click',()=>{try{localStorage.removeItem(LS_META);}catch(e){}S.metaSujo=false;$('#metaHoras').value='';renderMetaCfg();toast('Meta removida','undo');});
+$('#btnBusca').addEventListener('click',abrirBusca);
+
 /* ---------- teclado ---------- */
 document.addEventListener('keydown',ev=>{
   const digitando=ev.target.closest&&ev.target.closest('input,textarea,select,[contenteditable]');
   if(ev.key==='Escape'){if(!$('#connModal').hidden){fecharConn();return;}if(S.drawer&&(!formSujo()||confirm('Descartar o que foi digitado?')))fecharDrawer();menu(false);return;}
+  if((ev.metaKey||ev.ctrlKey)&&(ev.key==='k'||ev.key==='K')){ev.preventDefault();abrirBusca();return;}
   if(digitando||ev.metaKey||ev.ctrlKey||ev.altKey)return;
   if(ev.key==='n'||ev.key==='N'){ev.preventDefault();abrirForm();}
+  if(ev.key==='/'){ev.preventDefault();abrirBusca();}
   if(S.view==='lancamentos'&&!S.drawer){if(ev.key==='ArrowLeft')$('#prevP').click();if(ev.key==='ArrowRight')$('#nextP').click();}
 });
 
