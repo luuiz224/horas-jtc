@@ -685,6 +685,13 @@ textarea.inp.prompt{background:#000;color:#5bd16a;border-color:var(--ink)}
 @media (max-width:640px){.poke-tela{display:none}}
 @keyframes flutuar{50%{transform:translateY(-6px)}}
 .poke-vazio{height:88px;width:auto;image-rendering:pixelated}
+.dorme{position:relative;display:inline-block;padding-top:14px}
+.zzz{position:absolute;top:0;right:-14px;width:40px;height:40px;pointer-events:none}
+.zzz i{position:absolute;left:0;bottom:0;font-style:normal;font-family:var(--f-title);font-weight:700;color:var(--info);text-shadow:2px 2px 0 var(--ink);opacity:0;animation:zzz 2.7s steps(9) infinite}
+.zzz i:nth-child(1){font-size:.8rem}
+.zzz i:nth-child(2){font-size:1rem;animation-delay:.9s}
+.zzz i:nth-child(3){font-size:1.25rem;animation-delay:1.8s}
+@keyframes zzz{0%{opacity:0;transform:translate(0,0)}15%{opacity:1}85%{opacity:1}100%{opacity:0;transform:translate(16px,-30px)}}
 .locked{align-items:center;gap:.8rem}
 .locked b{font-family:var(--f-title);letter-spacing:.03em}
 .poke-ok{height:58px;width:auto;image-rendering:pixelated;flex-shrink:0;margin:-6px 0;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.4))}
@@ -974,6 +981,8 @@ function loadConn(){try{const c=JSON.parse(localStorage.getItem(LS)||'null');if(
 function saveConn(c){try{localStorage.setItem(LS,JSON.stringify(c));}catch(e){}}
 
 function toast(msg,icone,img,ms){const t=$('#toast');t.innerHTML=(img?'<img class="toast-poke" src="'+img+'" alt="" onerror="this.remove()">':icone?ic(icone,15):'')+'<span>'+esc(msg)+'</span>';t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,ms||3400);}
+// Snorlax "dormindo" nas telas vazias: o sprite animado não tem pose de sono, então os Z sobem por cima.
+const snorlax=()=>'<span class="dorme" title="Zzz…"><img class="poke-vazio" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/143.gif" alt="" onerror="this.parentNode.remove()"><span class="zzz" aria-hidden="true"><i>Z</i><i>z</i><i>z</i></span></span>';
 const PIKACHU='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif';
 
 /* ---------- tema ---------- */
@@ -1172,7 +1181,7 @@ function renderLista(){
   $('#lQtd').textContent=todos.length;
   if(!list.length){
     const msg=todos.length?'Nenhum lançamento com esse filtro.':'Nenhuma hora lançada em '+periodLabel(S.period)+'.';
-    el.innerHTML='<div class="vazio">'+(todos.length?'<span class="ico">'+ic('search',20)+'</span>':'<img class="poke-vazio" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/143.gif" alt="" title="Zzz…" onerror="this.remove()">')+'<div>'+esc(msg)+'</div>'+
+    el.innerHTML='<div class="vazio">'+(todos.length?'<span class="ico">'+ic('search',20)+'</span>':snorlax())+'<div>'+esc(msg)+'</div>'+
       (!todos.length&&canWrite()&&!isLocked(S.period)?'<button class="btn btn-primary btn-sm" data-a="novo">'+ic('plus',14)+'Lançar horas</button>':'')+'</div>';
   }else{
     const porDia={};list.forEach(e=>(porDia[e.data]=porDia[e.data]||[]).push(e));
@@ -1708,7 +1717,7 @@ function renderRel(){
     '<div class="frame-corpo"><div class="kpi-k">'+ic('clock',14)+'Horas</div><div class="kpi-v num">'+fmtHM(tot)+'</div><div class="kpi-s">'+fmtDec(tot)+' h</div></div>'+
     '<div class="frame-corpo"><div class="kpi-k">'+ic('calendar',14)+'Dias trabalhados</div><div class="kpi-v">'+dias+'</div><div class="kpi-s">'+(dias?'média de '+fmtHM(tot/dias)+' por dia':'—')+' · '+l.length+' lançamento'+(l.length===1?'':'s')+'</div></div>'+
     '<div class="frame-corpo"><div class="kpi-k">'+ic('lock',14)+'Já enviado à JTC</div><div class="kpi-v">'+esc(fmtBRL(totEnv/60*vh))+'</div><div class="kpi-s">'+fmtHM(totEnv)+' · falta enviar '+esc(fmtBRL((tot-totEnv)/60*vh))+'</div></div>';
-  if(!l.length){$('#relCorpo').innerHTML='<div class="vazio"><span class="ico">'+ic('search',20)+'</span>Nenhum lançamento nesse período com esses filtros.</div>';return;}
+  if(!l.length){$('#relCorpo').innerHTML='<div class="vazio">'+snorlax()+'<div>Nenhum lançamento nesse período com esses filtros.</div></div>';return;}
 
   const agrupa=(chave,nome)=>{const m=new Map();l.forEach(e=>{const k=chave(e);const g=m.get(k)||{k,nome:nome(e,k),min:0,n:0};g.min+=e.min;g.n++;m.set(k,g);});return [...m.values()];};
   const meses=agrupa(e=>e.data.slice(0,7),(e,k)=>{const [y,m]=k.split('-');return MESES_L[+m-1].replace(/^./,c=>c.toUpperCase())+' '+y;}).sort((a,b)=>a.k<b.k?-1:1);
