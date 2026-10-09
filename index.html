@@ -685,6 +685,11 @@ textarea.inp.prompt{background:#000;color:#5bd16a;border-color:var(--ink)}
 @media (max-width:640px){.poke-tela{display:none}}
 @keyframes flutuar{50%{transform:translateY(-6px)}}
 .poke-vazio{height:88px;width:auto;image-rendering:pixelated}
+.locked{align-items:center;gap:.8rem}
+.locked b{font-family:var(--f-title);letter-spacing:.03em}
+.poke-ok{height:58px;width:auto;image-rendering:pixelated;flex-shrink:0;margin:-6px 0;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.4))}
+.toast-poke{height:52px;width:auto;image-rendering:pixelated;margin:-8px 0 -8px -4px}
+.toast{display:flex;align-items:center;gap:.7rem}
 @media (max-height:640px){.poke-canto{display:none}}
 @media (prefers-reduced-motion:reduce){body{animation:none}}
 </style>
@@ -779,7 +784,7 @@ textarea.inp.prompt{background:#000;color:#5bd16a;border-color:var(--ink)}
             </div>
           </div>
           <div class="dias">
-            <div class="locked" id="lockedNote" hidden><span data-ic="lock" data-sz="15"></span>Quinzena enviada à JTC: horas, datas e exclusões travadas. Conferência e comentários continuam liberados.</div>
+            <div class="locked" id="lockedNote" hidden><img class="poke-ok" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" alt="" title="Pikachu comemorando o envio" loading="lazy" onerror="this.remove()"><span><b>Quinzena enviada à JTC!</b> Horas, datas e exclusões travadas. Conferência e comentários continuam liberados.</span></div>
             <div id="lista"></div>
             <div class="l-foot" id="lFoot"></div>
           </div>
@@ -968,7 +973,8 @@ const S={conn:null,entries:[],periods:{},cfg:{valorHora:50,arquivo:'Controle_de_
 function loadConn(){try{const c=JSON.parse(localStorage.getItem(LS)||'null');if(c&&c.url&&c.chave&&c.nome)return c;}catch(e){}return null;}
 function saveConn(c){try{localStorage.setItem(LS,JSON.stringify(c));}catch(e){}}
 
-function toast(msg,icone){const t=$('#toast');t.innerHTML=(icone?ic(icone,15):'')+'<span>'+esc(msg)+'</span>';t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,3400);}
+function toast(msg,icone,img,ms){const t=$('#toast');t.innerHTML=(img?'<img class="toast-poke" src="'+img+'" alt="" onerror="this.remove()">':icone?ic(icone,15):'')+'<span>'+esc(msg)+'</span>';t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,ms||3400);}
+const PIKACHU='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif';
 
 /* ---------- tema ---------- */
 function temaSalvo(){try{return localStorage.getItem(LS_TEMA)||'sistema';}catch(e){return 'sistema';}}
@@ -1368,7 +1374,7 @@ $('#btnSend').addEventListener('click',async()=>{
     const naoConf=periodEntries(key).filter(e=>e.conf!=='ok').length;
     if(naoConf&&!S.sendArmed){S.sendArmed=true;$('#btnSendTxt').textContent='Enviar com '+naoConf+' sem conferir?';renderQuinzena();setTimeout(()=>{if(S.sendArmed){S.sendArmed=false;renderQuinzena();}},6000);return;}
     S.sendArmed=false;
-    await api('periodo',{key,rev:p.rev||0,situacao:'enviada'});toast('Quinzena marcada como enviada. Horas travadas.','lock');
+    await api('periodo',{key,rev:p.rev||0,situacao:'enviada'});toast('Quinzena enviada! Horas travadas.','lock',PIKACHU,5000);
   }catch(e){S.sendArmed=false;fail(e);}
 });
 
