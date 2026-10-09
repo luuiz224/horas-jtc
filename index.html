@@ -856,6 +856,8 @@ mark{background:var(--accent);color:#fff;padding:0 1px}
 .mc.tem{background:var(--accent-dim);border-color:var(--accent-line)}
 .mc.tem small{color:var(--accent-text);font-family:var(--f-lcd);font-size:.85rem}
 .mc.livre{border:2px dashed var(--warning);background:var(--warning-dim)}
+.mc.fila{border:2px dotted var(--info);background:var(--info-dim)}
+.mc.fila small{color:var(--info);font-weight:600}
 .mc.livre small{color:var(--warning);font-weight:600}
 .mc.hoje b{text-decoration:underline;text-underline-offset:2px}
 .mc.sel{outline:3px solid var(--accent);outline-offset:1px;background:var(--accent);border-color:var(--ink)}
@@ -1549,16 +1551,24 @@ function montarForm(){
   setTimeout(()=>(e?$('#fHoras'):$('#fHoras')).focus(),60);
 }
 // Mini calendário da quinzena da data escolhida: mostra o que já tem lançado e os dias úteis livres.
-function renderMiniCal(){
-  const el=$('#miniCal');if(!el)return;const sel=$('#fData').value||todayISO(),key=periodOf(sel),r=periodRange(key),hoje=todayISO(),porDia={};
-  periodEntries(key).forEach(e=>{if(!(S.drawer&&S.drawer.id===e.id))porDia[e.data]=(porDia[e.data]||0)+e.min;});
+// Mini calendário da quinzena da data escolhida: horas já lançadas, dias úteis livres e (no Colar da IA)
+// os dias já ocupados por outros itens do mesmo lote ("fila").
+function miniCal(el,info,sel,ignorarId,fila){
+  if(!el)return;sel=sel||todayISO();const key=periodOf(sel),r=periodRange(key),hoje=todayISO(),porDia={};fila=fila||{};
+  periodEntries(key).forEach(e=>{if(e.id!==ignorarId)porDia[e.data]=(porDia[e.data]||0)+e.min;});
   let h='';
-  for(let d=r.a;d<=r.b;d++){const iso=r.y+'-'+pad(r.m)+'-'+pad(d),v=porDia[iso]||0,we=isWeekend(iso),livre=!v&&!we&&iso<=hoje;
-    h+='<button type="button" class="mc'+(we?' we':'')+(v?' tem':'')+(livre?' livre':'')+(iso===sel?' sel':'')+(iso===hoje?' hoje':'')+'" data-cal="'+iso+'" title="'+esc(DIAS_L[wd(iso)]+', '+fmtDate(iso)+(v?' · já tem '+fmtHM(v):livre?' · livre':''))+'">'+
-      '<b>'+pad(d)+'</b><small>'+(v?fmtHM(v).replace('h00','h'):livre?'livre':DIAS[wd(iso)])+'</small></button>';}
+  for(let d=r.a;d<=r.b;d++){const iso=r.y+'-'+pad(r.m)+'-'+pad(d),v=porDia[iso]||0,q=fila[iso]||0,we=isWeekend(iso),livre=!v&&!q&&!we&&iso<=hoje;
+    h+='<button type="button" class="mc'+(we?' we':'')+(v?' tem':'')+(q&&!v?' fila':'')+(livre?' livre':'')+(iso===sel?' sel':'')+(iso===hoje?' hoje':'')+'" data-cal="'+iso+'" title="'+esc(DIAS_L[wd(iso)]+', '+fmtDate(iso)+(v?' · já tem '+fmtHM(v):'')+(q?' · '+fmtHM(q)+' em outro item colado':'')+(livre?' · livre':''))+'">'+
+      '<b>'+pad(d)+'</b><small>'+(v?fmtHM(v).replace('h00','h'):q?'fila':livre?'livre':DIAS[wd(iso)])+'</small></button>';}
   el.innerHTML=h;
-  const v=porDia[sel]||0;
-  $('#miniInfo').textContent=periodLabel(key)+(v?' · já tem '+fmtHM(v)+' em '+fmtDate(sel):' · '+fmtDate(sel)+' ainda sem horas')+(isLocked(key)?' · quinzena enviada (reabra para lançar)':'');
+  const v=porDia[sel]||0,q=fila[sel]||0;
+  if(info)info.textContent=periodLabel(key)+(v?' · já tem '+fmtHM(v)+' em '+fmtDate(sel):' · '+fmtDate(sel)+' ainda sem horas')+(q?' · +'+fmtHM(q)+' de outro item colado':'')+(isLocked(key)?' · quinzena enviada (reabra para lançar)':'');
+}
+function renderMiniCal(){if($('#fData'))miniCal($('#miniCal'),$('#miniInfo'),$('#fData').value,S.drawer&&S.drawer.id);}
+function renderImpCals(){
+  if(!S.importItens)return;lerImport();
+  S.importItens.forEach((e,i)=>{const fila={};S.importItens.forEach((o,j)=>{if(j!==i&&o.data&&o.min)fila[o.data]=(fila[o.data]||0)+o.min;});
+    miniCal(document.querySelector('[data-mc="'+i+'"]'),document.querySelector('[data-mi="'+i+'"]'),e.data,null,fila);});
 }
 function updateDurPreview(){
   const v=$('#fHoras').value,m=parseDur(v),el=$('#durPrev');
@@ -1655,8 +1665,8 @@ $('#btnCopy').addEventListener('click',async()=>{
   const list=periodEntries(S.period),clean=s=>String(s||'').replace(/[\t\r\n]+/g,' ').trim();
   const lines=['Data\tQuantidade de Horas\tServiço\tObservações\tStatus do Serviço\tSolicitante'].concat(list.map(e=>{const p=parts(e.data);return [pad(p.d)+'/'+pad(p.m)+'/'+p.y,fmtDec(e.min),clean(e.servico),clean(e.descricao),clean(e.status),clean(e.solicitante)].join('\t');}));
   const txt=lines.join('\n');
-  try{await navigator.clipboard.writeText(txt);toast('Copiado. Cole na planilha com Cmd+V.','copy');}
-  catch(e){const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Copiado. Cole na planilha com Cmd+V.','copy');}catch(_){toast('Não consegui copiar.','alert');}ta.remove();}
+  try{await navigator.clipboard.writeText(txt);toast('Copiado. Cole na planilha com Cmd+V.','copy');tocar('copiar');}
+  catch(e){const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Copiado. Cole na planilha com Cmd+V.','copy');tocar('copiar');}catch(_){toast('Não consegui copiar.','alert');}ta.remove();}
 });
 /* Modelo JTC: é a "Planilha de Controle de Horas Wilson.xlsx" sem as linhas de dados (estilos, larguras, filtro,
    verde na coluna A e impressão em paisagem vêm dele). A página só injeta as linhas usando os mesmos estilos. */
@@ -1688,7 +1698,7 @@ async function baixarXlsx(list,nome){
     const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nome+'.xlsx';document.body.appendChild(a);a.click();
     setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
-    toast('Planilha gerada no modelo JTC','download');
+    toast('Planilha gerada no modelo JTC','download');tocar('baixar');
   }catch(err){toast('Não consegui gerar o XLSX. Use "Copiar".','alert');}
 }
 
@@ -1765,9 +1775,9 @@ Exemplos do tom que eu quero (é só o jeito de escrever, não copie o conteúdo
 
 Se na conversa houve mais de um trabalho diferente ou mais de um dia, gere um bloco para cada um.`;
 async function copiarTexto(txt,msg){
-  try{await navigator.clipboard.writeText(txt);toast(msg,'copy');}
+  try{await navigator.clipboard.writeText(txt);toast(msg,'copy');tocar('copiar');}
   catch(e){const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
-    try{document.execCommand('copy');toast(msg,'copy');}catch(_){toast('Não consegui copiar.','alert');}ta.remove();}
+    try{document.execCommand('copy');toast(msg,'copy');tocar('copiar');}catch(_){toast('Não consegui copiar.','alert');}ta.remove();}
 }
 const CHAVES={data:'data',dia:'data',horas:'horas',hora:'horas',tempo:'horas',servico:'servico',titulo:'servico',status:'status','status do servico':'status',
   solicitante:'solicitante',observacoes:'descricao',observacao:'descricao',obs:'descricao',descricao:'descricao','o que foi feito':'descricao'};
@@ -1852,6 +1862,7 @@ function montarImport(){
   $('#drawerBody').innerHTML=itens.map((e,i)=>{
     const av=avisosImport(e).map(([t,m])=>'<div class="alerta'+(t==='bad'?' bad':'')+'"><span>'+ic(t==='bad'?'alert':'flag',15)+esc(m)+'</span></div>').join('');
     return '<div class="imp-card"><div class="imp-top"><b>Lançamento '+(i+1)+' de '+n+'</b><button type="button" class="btn btn-sm btn-ghost" data-imp-del="'+i+'">'+ic('x',13)+'Remover</button></div>'+av+
+      '<div class="campo"><span>Dias da quinzena <span class="hint">· clique para usar a data</span></span><div class="mini-cal" data-mc="'+i+'"></div><span class="hint" data-mi="'+i+'"></span></div>'+
       '<div class="grid2"><label class="campo"><span>Data</span><input class="inp" type="date" id="imp-data-'+i+'" value="'+esc(e.data)+'"></label>'+
       '<label class="campo"><span>Horas</span><input class="inp num'+(e.min?'':' falta')+'" id="imp-horas-'+i+'" value="'+esc(e.min?fmtHM(e.min):'')+'" placeholder="2h30, 2:30 ou 2,5"></label></div>'+
       '<label class="campo"><span>Serviço</span><input class="inp" id="imp-svc-'+i+'" list="svcList" maxlength="160" value="'+esc(e.servico)+'"></label>'+
@@ -1865,9 +1876,15 @@ function montarImport(){
   $('#impVoltar').addEventListener('click',()=>{lerImport();S.importItens=null;montarImport();});
   $('#impSalvar').addEventListener('click',salvarImport);
   // Atribuição (não addEventListener): o painel é redesenhado várias vezes e os ouvintes se acumulariam.
-  $('#drawerBody').onclick=ev=>{const b=ev.target.closest('[data-imp-del]');if(!b)return;lerImport();S.importItens.splice(+b.dataset.impDel,1);
+  $('#drawerBody').onclick=ev=>{
+    const c=ev.target.closest('[data-cal]'),mc=c&&c.closest('[data-mc]');
+    if(mc){const i=mc.dataset.mc;document.getElementById('imp-data-'+i).value=c.dataset.cal;renderImpCals();const h=document.getElementById('imp-horas-'+i);if(h&&!h.value)h.focus();return;}
+    const b=ev.target.closest('[data-imp-del]');if(!b)return;lerImport();S.importItens.splice(+b.dataset.impDel,1);
     if(!S.importItens.length){S.importItens=null;}montarImport();};
-  $('#drawerBody').oninput=ev=>{if(ev.target.id&&ev.target.id.startsWith('imp-horas-'))ev.target.classList.toggle('falta',!parseDur(ev.target.value));};
+  $('#drawerBody').oninput=ev=>{const id=ev.target.id||'';
+    if(id.startsWith('imp-horas-')){ev.target.classList.toggle('falta',!parseDur(ev.target.value));renderImpCals();}
+    if(id.startsWith('imp-data-'))renderImpCals();};
+  renderImpCals();
   const primeira=itens.findIndex(e=>!e.min);if(primeira>=0)setTimeout(()=>{const h=document.getElementById('imp-horas-'+primeira);h&&h.focus();},80);
 }
 async function salvarImport(){
@@ -2100,7 +2117,7 @@ $('#btnBusca').addEventListener('click',abrirBusca);
 const LS_SOM='horasjtc.som';
 function somLigado(){try{return localStorage.getItem(LS_SOM)!=='off';}catch(e){return true;}}
 const SONS={lancar:[[660,.07],[880,.1]],ok:[[988,.05],[1319,.09]],alerta:[[330,.09],[262,.14]],erro:[[196,.12],[147,.2]],
-  enviar:[[523,.09],[659,.09],[784,.09],[1047,.25]],click:[[880,.035]],levelup:[[523,.07],[659,.07],[784,.07],[1047,.07],[784,.07],[1047,.28]],
+  enviar:[[523,.09],[659,.09],[784,.09],[1047,.25]],click:[[880,.035]],copiar:[[1175,.04],[1568,.07]],baixar:[[784,.06],[659,.06],[523,.06],[1047,.16]],levelup:[[523,.07],[659,.07],[784,.07],[1047,.07],[784,.07],[1047,.28]],
   evolui:[[392,.1],[523,.1],[659,.1],[784,.1],[659,.08],[1047,.32]],insignia:[[784,.08],[988,.08],[1175,.08],[1568,.32]]};
 let audio=null;
 function tocar(nome){
