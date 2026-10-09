@@ -797,6 +797,25 @@ mark{background:var(--accent);color:#fff;padding:0 1px}
 .fundo-op span{padding:.45rem .6rem;font-family:var(--f-title);font-size:.82rem;letter-spacing:.02em;display:flex;align-items:center;gap:.35rem}
 .fundo-op.on span::before{content:'▶';color:var(--accent);font-size:.65rem;animation:piscar 1s steps(1) infinite}
 
+/* ── Evolução e insígnias ── */
+.evo{height:58px;width:auto;image-rendering:pixelated;margin:-16px -2px -12px -6px;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.45))}
+.evo.evoluindo{animation:evoluir 1.6s steps(8)}
+@keyframes evoluir{0%,50%,100%{filter:brightness(1) drop-shadow(2px 2px 0 rgba(0,0,0,.45))}25%,75%{filter:brightness(6) saturate(0)}}
+.meta-sub a{color:var(--accent-text)}
+.insignias{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.ins{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.25rem;padding:.9rem .7rem;border:2px solid var(--border-strong);background:var(--surface-2);box-shadow:3px 3px 0 var(--ink)}
+.ins-svg{width:56px;height:56px;margin-bottom:.3rem}
+.ins-svg svg{width:100%;height:100%;display:block;filter:drop-shadow(2px 0 0 #000) drop-shadow(-2px 0 0 #000) drop-shadow(0 2px 0 #000) drop-shadow(0 -2px 0 #000) drop-shadow(3px 3px 0 rgba(0,0,0,.35))}
+.ins:not(.ok) .ins-svg svg{filter:none}
+.ins b{font-family:var(--f-title);font-size:.9rem;letter-spacing:.02em}
+.ins small{font-size:.72rem;color:var(--text-muted);line-height:1.35}
+.ins-prog{margin-top:.35rem;font-family:var(--f-lcd);font-size:1.1rem;color:var(--text-muted)}
+.ins.ok{border-color:var(--warning);background:radial-gradient(90% 70% at 50% 0%,var(--warning-dim),transparent 70%),var(--surface)}
+.ins.ok .ins-svg{animation:flutuar 2.4s steps(4) infinite}
+.ins.ok .ins-prog{color:var(--warning)}
+.ins:not(.ok){opacity:.7}
+@media (max-width:640px){#btnSom{display:none}}
+
 /* ── Pokémon nos cantos (sprites animados de Black/White, carregados do PokeAPI) ── */
 .poke-canto{margin-top:auto;display:flex;justify-content:center;align-items:flex-end;padding:.6rem 0 .2rem;position:relative}
 .poke-canto img{width:auto;height:84px;image-rendering:pixelated;filter:drop-shadow(3px 3px 0 rgba(0,0,0,.45));animation:flutuar 2.4s steps(4) infinite}
@@ -865,6 +884,7 @@ mark{background:var(--accent);color:#fff;padding:0 1px}
       <button class="icon-btn menu-btn" id="btnMenu" aria-label="Menu" data-ic="menu" data-sz="18"></button>
       <h1 id="viewTitle">Lançamentos</h1>
       <img class="poke-tela" id="pokeTela" alt="" hidden onerror="this.hidden=true">
+      <button class="icon-btn" id="btnSom" aria-label="Ligar ou desligar o som"></button>
       <button class="icon-btn" id="btnBusca" title="Buscar em todos os lançamentos (/ ou Cmd+K)" aria-label="Buscar em tudo" data-ic="search"></button>
       <button class="icon-btn" id="btnTema" title="Alternar tema claro/escuro" aria-label="Alternar tema"></button>
       <button class="icon-btn" id="btnReload" title="Buscar o que o outro lançou" aria-label="Atualizar" data-ic="refresh"></button>
@@ -926,6 +946,10 @@ mark{background:var(--accent);color:#fff;padding:0 1px}
 
       <!-- ───────── Quinzenas ───────── -->
       <section id="v-quinzenas" hidden style="display:contents">
+        <section class="frame">
+          <div class="frame-head"><div class="frame-titulo"><span data-ic="flag"></span>Insígnias <small id="insQtd"></small></div></div>
+          <div class="frame-corpo"><div class="insignias" id="insignias"></div></div>
+        </section>
         <section class="frame">
           <div class="frame-head"><div class="frame-titulo"><span data-ic="calendar"></span>Todas as quinzenas <small>· clique para abrir</small></div></div>
           <div class="frame-corpo flush"><div class="tbl-wrap"><table id="overview"></table></div></div>
@@ -999,6 +1023,7 @@ mark{background:var(--accent);color:#fff;padding:0 1px}
         <section class="frame">
           <div class="frame-head"><div class="frame-titulo"><span data-ic="sun"></span>Aparência <small>· só neste navegador</small></div></div>
           <div class="frame-corpo"><div class="cfg-linha"><p>Tema da tela</p><div class="seg" id="segTema"><button data-t="sistema">Automático</button><button data-t="claro">Claro</button><button data-t="escuro">Escuro</button></div></div>
+            <div class="cfg-linha" style="margin-top:.9rem"><p>Sons 8-bit<small style="font-family:var(--f-body)">Ao lançar, conferir, enviar e nas conquistas.</small></p><div class="seg" id="segSom"><button data-som="on">Com som</button><button data-som="off">Sem som</button></div></div>
             <div class="cfg-linha" style="margin-top:1.1rem"><p>Fundo quadriculado<small style="font-family:var(--f-body)">Clique para trocar na hora.</small></p></div>
             <div class="fundos" id="fundos"></div></div>
         </section>
@@ -1081,6 +1106,8 @@ const IC={
   sparkle:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.7 1.8 1.8.7-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z"/>',
   coins:'<circle cx="8" cy="8" r="6"/><path d="M18.1 10.4A6 6 0 1 1 10.3 18"/><path d="M7 6h1v4"/><path d="m16.7 13.9.7.7-2.8 2.8"/>',
   fileText:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>',
+  som:'<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>',
+  mudo:'<path d="M11 5 6 9H2v6h4l5 4z"/><path d="m23 9-6 6M17 9l6 6"/>',
   file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>'
 };
 const ic=(n,s)=>'<svg width="'+(s||16)+'" height="'+(s||16)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+IC[n]+'</svg>';
@@ -1179,12 +1206,13 @@ function applyState(st){
   S.entries=st.entries||[];S.periods=st.periods||{};S.cfg=Object.assign({valorHora:50,arquivo:'Controle_de_Horas'},st.config||{});
   S.loaded=true;S.lastSync=new Date();
   if(S.drawer&&S.drawer.tipo==='det'&&!S.entries.find(e=>e.id===S.drawer.id))fecharDrawer();
+  setTimeout(checarConquistas,60);
 }
 async function refresh(silent){
   if(!S.conn||S.busy)return;
   try{await api('list');if(!silent)toast('Atualizado','check');}catch(e){if(!silent)toast(e.message,'alert');}
 }
-function fail(e){toast(e&&e.message?e.message:'Não salvou. Tente de novo.','alert');}
+function fail(e){tocar('erro');toast(e&&e.message?e.message:'Não salvou. Tente de novo.','alert');}
 
 /* ---------- derivados ---------- */
 function periodEntries(key,withDel){return S.entries.filter(e=>periodOf(e.data)===key&&(withDel||!e.excluido)).sort((a,b)=>a.data<b.data?-1:a.data>b.data?1:(a.criadoEm||'')<(b.criadoEm||'')?-1:1);}
@@ -1254,12 +1282,9 @@ const LS_IGN='horasjtc.diasIgnorados';
 function diasIgnorados(){try{return new Set(JSON.parse(localStorage.getItem(LS_IGN)||'[]'));}catch(e){return new Set();}}
 function ignorarDias(lista){const s=diasIgnorados();lista.forEach(d=>s.add(d));try{localStorage.setItem(LS_IGN,JSON.stringify([...s].sort().slice(-400)));}catch(e){}}
 function diasSemLanc(key){
+  // Só a partir do primeiro lançamento da planilha: antes disso o site nem era usado (ver diasFaltando).
   if(!S.loaded||isLocked(key))return [];
-  // Só a partir do primeiro lançamento da planilha: antes disso o site nem era usado.
-  const inicio=S.entries.reduce((m,e)=>!e.excluido&&(!m||e.data<m)?e.data:m,'');if(!inicio)return [];
-  const r=periodRange(key),hoje=todayISO(),com=new Set(periodEntries(key).map(e=>e.data)),ign=diasIgnorados(),out=[];
-  for(let d=r.a;d<=r.b;d++){const iso=r.y+'-'+pad(r.m)+'-'+pad(d);if(iso>=hoje)break;if(iso>=inicio&&!isWeekend(iso)&&!com.has(iso)&&!ign.has(iso))out.push(iso);}
-  return out;
+  return diasFaltando(key);
 }
 
 function confBadge(e){return e.conf==='ok'?'<span class="badge ok">'+ic('check',12)+'Conferido</span>':e.conf==='divergente'?'<span class="badge bad">'+ic('alert',12)+'Divergência</span>':'<span class="badge neutro">A conferir</span>';}
@@ -1362,6 +1387,7 @@ function renderLista(){
 }
 
 function renderOverview(){
+  renderInsignias();
   const keys=new Set(S.entries.filter(e=>!e.excluido).map(e=>periodOf(e.data)));keys.add(S.period);keys.add(periodOf(todayISO()));
   const vh=Number(S.cfg.valorHora)||0;
   let h='<thead><tr><th>Quinzena</th><th class="n">Lançamentos</th><th class="n">Horas</th><th class="n">Decimal</th><th class="n">Valor</th><th>Situação</th><th>Conferência</th></tr></thead><tbody>';
@@ -1490,7 +1516,7 @@ async function salvarForm(outro){
       toast('Alteração salva','check');abrirDrawer({tipo:'det',id:e.id});
     }else{
       await api('create',{entry:body});
-      toast('Lançado: '+fmtHM(min)+' em '+fmtDate(data),'check');
+      toast('Lançado: '+fmtHM(min)+' em '+fmtDate(data),'check');tocar('lancar');
       S.period=periodOf(data);
       if(outro){$('#fHoras').value='';$('#fServico').value='';$('#fDesc').value='';updateDurPreview();$('#fSave').disabled=false;$('#fHoras').focus();renderAll();}
       else fecharDrawer();
@@ -1513,9 +1539,9 @@ async function acao(a,id){
     if(a==='divCancel'){S.divForm=false;renderDrawer();return;}
     if(a==='delConfirm'){S.pendingDel=null;await upd({excluido:true},'excluiu',fmtHM(e.min)+' · '+e.servico);toast('Excluído. Dá para restaurar em "Mostrar excluídos".','trash');return;}
     if(a==='restore'){await upd({excluido:false},'restaurou','');toast('Restaurado','undo');return;}
-    if(a==='ok'){await upd({conf:'ok'},'conferiu',fmtHM(e.min));toast('Conferido: '+e.servico,'check');return;}
+    if(a==='ok'){await upd({conf:'ok'},'conferiu',fmtHM(e.min));toast('Conferido: '+e.servico,'check');tocar('ok');return;}
     if(a==='divSave'){const t=($('#divTxt').value||'').trim();if(!t){$('#divTxt').focus();return;}
-      S.divForm=false;$('#divTxt').value='';await upd({conf:'divergente'},'apontou divergência',t,{tipo:'divergencia',txt:t});toast('Divergência registrada','alert');return;}
+      S.divForm=false;$('#divTxt').value='';await upd({conf:'divergente'},'apontou divergência',t,{tipo:'divergencia',txt:t});toast('Divergência registrada','alert');tocar('alerta');return;}
     if(a==='note'){const ta=$('#noteTxt'),t=(ta&&ta.value||'').trim();if(!t){ta&&ta.focus();return;}ta.value='';await upd({},'comentou',t.slice(0,80),{tipo:'nota',txt:t});return;}
     if(a==='clearAlert'){await upd({alerta:''},'marcou aviso como resolvido',e.alerta||'');return;}
   }catch(err){fail(err);}
@@ -1542,11 +1568,11 @@ $('#overview').addEventListener('keydown',ev=>{if(ev.key==='Enter'&&ev.target.ma
 $('#btnSend').addEventListener('click',async()=>{
   const key=S.period,p=periodInfo(key);
   try{
-    if(p.situacao==='enviada'){await api('periodo',{key,rev:p.rev||0,situacao:'aberta'});toast('Quinzena reaberta','unlock');return;}
+    if(p.situacao==='enviada'){await api('periodo',{key,rev:p.rev||0,situacao:'aberta'});toast('Quinzena reaberta','unlock');tocar('click');return;}
     const naoConf=periodEntries(key).filter(e=>e.conf!=='ok').length;
     if(naoConf&&!S.sendArmed){S.sendArmed=true;$('#btnSendTxt').textContent='Enviar com '+naoConf+' sem conferir?';renderQuinzena();setTimeout(()=>{if(S.sendArmed){S.sendArmed=false;renderQuinzena();}},6000);return;}
     S.sendArmed=false;
-    await api('periodo',{key,rev:p.rev||0,situacao:'enviada'});toast('Quinzena enviada! Horas travadas.','lock',PIKACHU,5000);
+    await api('periodo',{key,rev:p.rev||0,situacao:'enviada'});toast('Quinzena enviada! Horas travadas.','lock',PIKACHU,5000);tocar('enviar');
   }catch(e){S.sendArmed=false;fail(e);}
 });
 
@@ -1786,7 +1812,7 @@ async function salvarImport(){
       S.importItens.shift();feitos++;ultima=e.data;
     }
     if(ultima)S.period=periodOf(ultima);
-    toast(feitos+(feitos===1?' lançamento feito':' lançamentos feitos'),'check');S.importItens=null;fecharDrawer();renderAll();
+    toast(feitos+(feitos===1?' lançamento feito':' lançamentos feitos'),'check');tocar('lancar');S.importItens=null;fecharDrawer();renderAll();
   }catch(err){
     fail(err);if(ultima)S.period=periodOf(ultima);
     if(S.importItens.length)montarImport();
@@ -1974,14 +2000,15 @@ function renderBuscaRes(){
 const LS_META='horasjtc.metaMin';
 function metaMin(){try{return Number(localStorage.getItem(LS_META))||0;}catch(e){return 0;}}
 function renderMeta(key,tot,vh){
-  const el=$('#meta');if(!el)return;const m=metaMin();
-  if(!m){el.innerHTML='<a class="meta-vazia" href="#config">'+ic('flag',14)+'Definir uma meta de horas para a quinzena</a>';return;}
+  // Sem meta definida, usa 40h como padrão (a evolução do Charmander depende dela).
+  const el=$('#meta');if(!el)return;const mUser=metaMin(),m=mUser||2400;
   const pct=Math.min(100,tot/m*100),falta=Math.max(0,m-tot),r=periodRange(key),hoje=todayISO();let uteis=0;
   for(let d=r.a;d<=r.b;d++){const iso=r.y+'-'+pad(r.m)+'-'+pad(d);if(iso>=hoje&&!isWeekend(iso))uteis++;}
-  const up=tot>=m;
-  el.innerHTML='<div class="meta'+(up?' up':'')+'" title="Meta da quinzena: '+fmtHM(m)+'"><span class="exp-lbl">EXP</span><div class="exp-bar"><span style="width:'+pct.toFixed(1)+'%"></span></div><span class="exp-num">'+fmtHM(tot)+' / '+fmtHM(m)+'</span></div>'+
+  const up=tot>=m,ev=EVO[estagio(tot,m)];
+  el.innerHTML='<div class="meta'+(up?' up':'')+'" title="Meta da quinzena: '+fmtHM(m)+'"><img class="evo'+(S.evoFlash===key?' evoluindo':'')+'" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/'+ev[0]+'.gif" alt="'+ev[1]+'" title="'+ev[1]+': evolui na metade da meta e ao bater a meta" onerror="this.remove()"><span class="exp-lbl">EXP</span><div class="exp-bar"><span style="width:'+pct.toFixed(1)+'%"></span></div><span class="exp-num">'+fmtHM(tot)+' / '+fmtHM(m)+'</span></div>'+
     '<div class="meta-sub">'+(up?'<span class="lvl">★ LEVEL UP!</span> Meta batida'+(tot>m?', '+fmtHM(tot-m)+' acima':'')+'.':
-      '<b>'+Math.floor(pct)+'%</b> da meta · faltam <b>'+fmtHM(falta)+'</b> ('+esc(fmtBRL(falta/60*vh))+')'+(uteis?' · ritmo: <b>'+fmtHM(falta/uteis)+'</b> por dia útil nos '+uteis+' dia'+(uteis===1?'':'s')+' que restam':' · a quinzena já acabou'))+'</div>';
+      '<b>'+Math.floor(pct)+'%</b> da meta · faltam <b>'+fmtHM(falta)+'</b> ('+esc(fmtBRL(falta/60*vh))+')'+(uteis?' · ritmo: <b>'+fmtHM(falta/uteis)+'</b> por dia útil nos '+uteis+' dia'+(uteis===1?'':'s')+' que restam':' · a quinzena já acabou'))+
+    (mUser?'':' · <a href="#config">meta padrão de 40h, defina a sua</a>')+'</div>';
 }
 function renderMetaCfg(){
   const m=metaMin(),vh=Number(S.cfg.valorHora)||0,inp=$('#metaHoras');
@@ -1995,6 +2022,86 @@ $('#metaForm').addEventListener('submit',ev=>{ev.preventDefault();const v=parseD
   try{localStorage.setItem(LS_META,String(v));}catch(e){}S.metaSujo=false;renderMetaCfg();toast('Meta salva: '+fmtHM(v)+' por quinzena','flag');});
 $('#metaLimpar').addEventListener('click',()=>{try{localStorage.removeItem(LS_META);}catch(e){}S.metaSujo=false;$('#metaHoras').value='';renderMetaCfg();toast('Meta removida','undo');});
 $('#btnBusca').addEventListener('click',abrirBusca);
+
+/* ---------- sons 8-bit (gerados no navegador, sem arquivos) ---------- */
+const LS_SOM='horasjtc.som';
+function somLigado(){try{return localStorage.getItem(LS_SOM)!=='off';}catch(e){return true;}}
+const SONS={lancar:[[660,.07],[880,.1]],ok:[[988,.05],[1319,.09]],alerta:[[330,.09],[262,.14]],erro:[[196,.12],[147,.2]],
+  enviar:[[523,.09],[659,.09],[784,.09],[1047,.25]],click:[[880,.035]],levelup:[[523,.07],[659,.07],[784,.07],[1047,.07],[784,.07],[1047,.28]],
+  evolui:[[392,.1],[523,.1],[659,.1],[784,.1],[659,.08],[1047,.32]],insignia:[[784,.08],[988,.08],[1175,.08],[1568,.32]]};
+let audio=null;
+function tocar(nome){
+  if(!somLigado()||!SONS[nome])return;
+  try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();
+    let t=audio.currentTime+.01;
+    SONS[nome].forEach(([f,d])=>{const o=audio.createOscillator(),g=audio.createGain();o.type=nome==='evolui'?'triangle':'square';o.frequency.value=f;
+      g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.05,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+      o.connect(g).connect(audio.destination);o.start(t);o.stop(t+d+.02);t+=d;});
+  }catch(e){}
+}
+function renderSom(){const on=somLigado();$('#btnSom').innerHTML=ic(on?'som':'mudo',17);$('#btnSom').title=on?'Som ligado (clique para silenciar)':'Som desligado (clique para ligar)';
+  $$('#segSom button').forEach(b=>b.classList.toggle('on',(b.dataset.som==='on')===on));}
+function setSom(on){try{localStorage.setItem(LS_SOM,on?'on':'off');}catch(e){}renderSom();if(on)tocar('ok');toast(on?'Som ligado':'Som desligado',on?'som':'mudo');}
+$('#btnSom').addEventListener('click',()=>setSom(!somLigado()));
+$('#segSom').addEventListener('click',ev=>{const b=ev.target.closest('[data-som]');if(b)setSom(b.dataset.som==='on');});
+
+/* ---------- avisos em fila (conquistas não atropelam umas às outras) ---------- */
+const filaAvisos=[];let avisando=false;
+function avisar(msg,img,som){filaAvisos.push([msg,img,som]);if(!avisando)proxAviso();}
+function proxAviso(){const a=filaAvisos.shift();if(!a){avisando=false;return;}avisando=true;toast(a[0],'',a[1],3600);tocar(a[2]);setTimeout(proxAviso,3800);}
+
+/* ---------- evolução: Charmander → Charmeleon → Charizard conforme a meta da quinzena ---------- */
+const EVO=[[4,'Charmander'],[5,'Charmeleon'],[6,'Charizard']];
+function estagio(tot,m){return tot>=m?2:tot>=m/2?1:0;}
+
+/* ---------- insígnias ---------- */
+const INSIGNIAS=[{"id": "primeiro", "nome": "Primeiro passo", "desc": "Fazer o primeiro lançamento", "forma": ["..XXXXX..", ".XXXXXXX.", "XXXXXXXXX", "XXXXXXXXX", "XXXXXXXXX", "XXXXXXXXX", "XXXXXXXXX", ".XXXXXXX.", "..XXXXX.."], "cor": "#a3a8ae"}, {"id": "cem", "nome": "100 horas", "desc": "Somar 100 horas lançadas", "forma": ["....X....", "...XXX...", "..XXXXX..", ".XXXXXXX.", "XXXXXXXXX", "XXXXXXXXX", "XXXXXXXXX", ".XXXXXXX.", "..XXXXX.."], "cor": "#3b82f6"}, {"id": "quinhentas", "nome": "500 horas", "desc": "Somar 500 horas lançadas", "forma": ["....X....", "...XXX...", "XXXXXXXXX", ".XXXXXXX.", "..XXXXX..", ".XXXXXXX.", ".XX...XX.", "XX.....XX", "........."], "cor": "#f8d030"}, {"id": "enviadas", "nome": "5 quinzenas", "desc": "Enviar 5 quinzenas à JTC", "forma": ["..XX.XX..", ".XXXXXXX.", "XXXXXXXXX", ".XXXXXXX.", "XXXXXXXXX", ".XXXXXXX.", "..XX.XX..", "....X....", "....X...."], "cor": "#5bd16a"}, {"id": "perfeita", "nome": "Quinzena perfeita", "desc": "Enviar uma quinzena com tudo conferido", "forma": [".XX...XX.", "XXXX.XXXX", "XXXXXXXXX", "XXXXXXXXX", ".XXXXXXX.", "..XXXXX..", "...XXX...", "....X....", "........."], "cor": "#f472b6"}, {"id": "assiduo", "nome": "Sem faltar", "desc": "Fechar uma quinzena sem dia útil vazio", "forma": ["..XXXXX..", ".XX...XX.", "XX.XXX.XX", "X.XXXXX.X", "X.XXXXX.X", "X.XXXXX.X", "XX.XXX.XX", ".XX...XX.", "..XXXXX.."], "cor": "#e8b33a"}, {"id": "maratona", "nome": "Maratona", "desc": "Lançar 10 horas ou mais num dia", "forma": ["....X....", "...XX....", "...XXX...", "..XXXXX..", ".XXXXXXX.", ".XXX.XXX.", "XXX...XXX", ".XX...XX.", "..XXXXX.."], "cor": "#ef4444"}, {"id": "meta", "nome": "Meta batida", "desc": "Bater a meta numa quinzena", "forma": [".....XXXX", "...XXXXXX", "..XXXXXXX", ".XXXXXXX.", ".XXXXXX..", "XXXXXX...", "XXXXX....", "XXX......", "X........"], "cor": "#2dd4bf"}];
+// Desenha a insígnia em pixel art a partir da grade 9x9 (X = pixel pintado).
+function insSvg(mapa,cor){let r='';mapa.forEach((l,y)=>[...l].forEach((c,x)=>{if(c==='X')r+='<rect x="'+x+'" y="'+y+'" width="1" height="1"/>';}));
+  return '<svg viewBox="-1 -1 11 11" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><g fill="'+cor+'">'+r+'</g></svg>';}
+function diasFaltando(key){
+  const inicio=S.entries.reduce((m,e)=>!e.excluido&&(!m||e.data<m)?e.data:m,'');if(!inicio)return [];
+  const r=periodRange(key),hoje=todayISO(),com=new Set(periodEntries(key).map(e=>e.data)),ign=diasIgnorados(),out=[];
+  for(let d=r.a;d<=r.b;d++){const iso=r.y+'-'+pad(r.m)+'-'+pad(d);if(iso>=hoje)break;if(iso>=inicio&&!isWeekend(iso)&&!com.has(iso)&&!ign.has(iso))out.push(iso);}
+  return out;
+}
+function calcInsignias(){
+  const at=S.entries.filter(e=>!e.excluido),totMin=sumMin(at),hoje=todayISO(),m=metaMin()||2400;
+  const keys=[...new Set(at.map(e=>periodOf(e.data)))],env=keys.filter(k=>isLocked(k));
+  const perfeita=env.some(k=>{const l=periodEntries(k);return l.length&&l.every(e=>e.conf==='ok');});
+  // Quinzena já encerrada, com lançamentos e sem nenhum dia útil vazio (feriados dispensados não contam).
+  const assiduo=keys.some(k=>k<periodOf(hoje)&&periodEntries(k).length&&!diasFaltando(k).length);
+  const porDia={};at.forEach(e=>porDia[e.data]=(porDia[e.data]||0)+e.min);const maxDia=Math.max(0,...Object.values(porDia));
+  const metaQ=keys.some(k=>sumMin(periodEntries(k))>=m);
+  const h=x=>Math.floor(x/60);
+  const st={primeiro:[at.length>=1,at.length?'1/1':'0/1'],cem:[totMin>=6000,Math.min(h(totMin),100)+'/100 h'],quinhentas:[totMin>=30000,Math.min(h(totMin),500)+'/500 h'],
+    enviadas:[env.length>=5,Math.min(env.length,5)+'/5'],perfeita:[perfeita,perfeita?'1/1':'0/1'],assiduo:[assiduo,assiduo?'1/1':'0/1'],
+    maratona:[maxDia>=600,'recorde: '+fmtHM(maxDia)],meta:[metaQ,metaQ?'1/1':'0/1']};
+  return INSIGNIAS.map(i=>Object.assign({},i,{ok:st[i.id][0],prog:st[i.id][1]}));
+}
+function renderInsignias(){
+  const el=$('#insignias');if(!el)return;if(!S.loaded){el.innerHTML='';return;}
+  const l=calcInsignias(),n=l.filter(i=>i.ok).length;$('#insQtd').textContent='· '+n+' de '+l.length+' conquistadas';
+  el.innerHTML=l.map(i=>'<div class="ins'+(i.ok?' ok':'')+'" title="'+esc(i.desc)+'"><div class="ins-svg">'+insSvg(i.forma,i.ok?i.cor:'var(--border-strong)')+'</div><b>'+esc(i.nome)+'</b><small>'+esc(i.desc)+'</small><span class="ins-prog">'+(i.ok?'★ Conquistada':esc(i.prog))+'</span></div>').join('');
+}
+
+/* ---------- detecção de conquistas (só avisa o que mudou desde a última vez neste navegador) ---------- */
+const LS_CONQ='horasjtc.conquistas';
+function checarConquistas(){
+  if(!S.loaded)return;
+  let salvo=null;try{salvo=JSON.parse(localStorage.getItem(LS_CONQ)||'null');}catch(e){}
+  const ins=calcInsignias().filter(i=>i.ok).map(i=>i.id),k=periodOf(todayISO()),tot=sumMin(periodEntries(k)),m=metaMin()||2400,est=estagio(tot,m);
+  const agora={ins,evo:{},up:{}};agora.evo[k]=est;agora.up[k]=tot>=m;
+  if(salvo){
+    ins.filter(i=>!salvo.ins.includes(i)).forEach(id=>{const i=INSIGNIAS.find(x=>x.id===id);avisar('Nova insígnia: '+i.nome+'!','data:image/svg+xml,'+encodeURIComponent(insSvg(i.forma,i.cor)),'insignia');});
+    const evoAntes=(salvo.evo||{})[k];
+    if(evoAntes!==undefined&&est>evoAntes){S.evoFlash=k;avisar(EVO[evoAntes][1]+' evoluiu para '+EVO[est][1]+'!','https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/'+EVO[est][0]+'.gif','evolui');setTimeout(()=>{S.evoFlash=null;},2500);if(S.view==='lancamentos')renderQuinzena();}
+    if((salvo.up||{})[k]===false&&agora.up[k])avisar('LEVEL UP! Meta da quinzena batida!',PIKACHU,'levelup');
+    agora.evo=Object.assign({},salvo.evo,agora.evo);agora.up=Object.assign({},salvo.up,agora.up);
+  }
+  try{localStorage.setItem(LS_CONQ,JSON.stringify(agora));}catch(e){}
+}
+renderSom();
 
 /* ---------- teclado ---------- */
 document.addEventListener('keydown',ev=>{

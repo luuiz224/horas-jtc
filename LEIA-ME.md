@@ -67,6 +67,11 @@ solicitante e comentários, sem diferenciar acento; mostra total de horas e valo
 **Meta da quinzena** (Configuração, salva no navegador): barra de EXP no resumo com quanto falta e o ritmo por dia útil
 restante; ao bater a meta aparece LEVEL UP.
 
+**Evolução**: ao lado da barra de EXP, Charmander vira Charmeleon na metade da meta e Charizard ao bater a meta
+(sem meta definida, usa 40h). **Insígnias**: 8 conquistas em "Todas as quinzenas". **Sons 8-bit** ao lançar, conferir,
+enviar e nas conquistas, com botão de ligar/desligar na barra de cima e em Configuração. Avisos de conquista só aparecem
+para o que for conquistado depois da primeira visita naquele navegador.
+
 Atalhos: `N` novo lançamento, `←`/`→` troca de quinzena, `Esc` fecha o painel. Tema claro/escuro no botão da barra de cima ou em Configuração.
 
 Quinzenas: 1ª = dias 01–15, 2ª = dia 16 até o fim do mês, sempre pela data do lançamento.
