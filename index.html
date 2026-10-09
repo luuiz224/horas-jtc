@@ -1054,7 +1054,7 @@ function irPara(v){
   ['lancamentos','quinzenas','relatorios','config'].forEach(k=>{$('#v-'+k).hidden=k!==S.view;});
   $('#viewTitle').textContent=TITULOS[S.view];
   // Um Pokémon por tela (sprites animados de Black/White do PokeAPI).
-  const P={lancamentos:[384,'Rayquaza'],quinzenas:[571,'Zoroark'],relatorios:[473,'Mamoswine'],config:[6,'Charizard']}[S.view];
+  const P={lancamentos:[384,'Rayquaza'],quinzenas:[571,'Zoroark'],relatorios:[473,'Mamoswine'],config:[448,'Lucario']}[S.view];
   const pt=$('#pokeTela');pt.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/'+P[0]+'.gif';pt.title=P[1];pt.hidden=false;
   menu(false);renderAll();
 }
