@@ -27,6 +27,16 @@ A planilha é o banco de dados; a página é só a tela. Luiz e Wilson lançam, 
 Não suba o `historico-jul-set-2026.json` nem o `Code.gs` com a chave: o repositório é público.
 Sem a chave, quem achar a página não lê nem grava nada.
 
+## Instalar como app no Mac
+
+O site é um PWA (manifest.webmanifest + sw.js + icones/). Depois de publicado:
+- **Chrome**: ícone ⊕ "Instalar" na barra de endereço, ou menu ⋮ → Transmitir, salvar e compartilhar → Instalar página como app.
+  Opcional: no app aberto, o botão ⌄ da barra de título ("ocultar barra de título") faz a barra preta do site virar a barra da janela.
+- **Safari** (macOS Sonoma+): Arquivo → Adicionar ao Dock. O app do Safari tem armazenamento próprio: preencha a conexão uma vez nele.
+
+O service worker só guarda a página e os ícones; a planilha do Google nunca passa por ele.
+Os ícones vêm de icones/icone-mac.svg (Dock) e icones/icone-cheio.svg (versão recortável).
+
 ## 3. Primeiro acesso (cada um, no próprio Mac)
 
 Abra a página e preencha **Conexão**: a URL `/exec`, a chave e o seu nome (Luiz ou Wilson).
