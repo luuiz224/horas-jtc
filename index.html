@@ -662,6 +662,25 @@ textarea.inp.prompt{background:#000;color:#5bd16a;border-color:var(--ink)}
   .kpi-v{font-size:2.1rem}
   .wb-tit{display:none}
 }
+/* ── Ocupa a tela: sem faixas vazias nas laterais; em tela larga, Resumo e Horas por dia lado a lado ── */
+.container{max-width:1760px;padding-inline:1.5rem}
+.tiles{display:grid;grid-template-columns:minmax(0,1fr);gap:1.1rem}
+.tiles>.frame{min-width:0}
+.tiles>.frame>.frame-corpo{display:flex;align-items:flex-end}
+.tiles .ruler{width:100%}
+@media (min-width:1380px){
+  .tiles{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}
+  .tiles #kpis{grid-template-columns:repeat(2,minmax(0,1fr));height:100%}
+}
+
+/* ── Pokémon nos cantos (sprites animados de Black/White, carregados do PokeAPI) ── */
+.poke-canto{margin-top:auto;display:flex;justify-content:center;align-items:flex-end;padding:.6rem 0 .2rem;position:relative}
+.poke-canto img{width:auto;height:84px;image-rendering:pixelated;filter:drop-shadow(3px 3px 0 rgba(0,0,0,.45));animation:flutuar 2.4s steps(4) infinite}
+.poke-canto::after{content:'';position:absolute;bottom:.15rem;width:46px;height:6px;background:rgba(0,0,0,.35)}
+.poke-canto+.side-foot{margin-top:0}
+@keyframes flutuar{50%{transform:translateY(-6px)}}
+.poke-vazio{height:88px;width:auto;image-rendering:pixelated}
+@media (max-height:640px){.poke-canto{display:none}}
 @media (prefers-reduced-motion:reduce){body{animation:none}}
 </style>
 </head>
@@ -690,6 +709,7 @@ textarea.inp.prompt{background:#000;color:#5bd16a;border-color:var(--ink)}
         <a class="nav-link" href="#config" data-view="config"><span data-ic="sliders" data-sz="17"></span>Configuração</a>
       </nav>
     </div>
+    <div class="poke-canto" title="O Gengar está de olho nas suas horas"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/94.gif" alt="" loading="lazy" onerror="this.parentNode.remove()"></div>
     <div class="side-foot">
       <button class="side-user" id="btnUser" title="Conexão com a planilha">
         <span class="avatar" id="avatar">?<span class="dot" id="dot"></span></span>
@@ -732,6 +752,7 @@ textarea.inp.prompt{background:#000;color:#5bd16a;border-color:var(--ink)}
           </div>
         </div>
 
+        <div class="tiles">
         <section class="frame">
           <div class="frame-head"><div class="frame-titulo"><span data-ic="chart"></span>Resumo da quinzena</div></div>
           <div class="frame-grade" id="kpis"></div>
@@ -741,6 +762,7 @@ textarea.inp.prompt{background:#000;color:#5bd16a;border-color:var(--ink)}
           <div class="frame-head"><div class="frame-titulo"><span data-ic="calendar"></span>Horas por dia <small>· clique num dia para ir até ele</small></div></div>
           <div class="frame-corpo"><div class="ruler" id="ruler"></div></div>
         </section>
+        </div>
 
         <section class="frame">
           <div class="frame-head">
@@ -1135,7 +1157,7 @@ function renderLista(){
   $('#lQtd').textContent=todos.length;
   if(!list.length){
     const msg=todos.length?'Nenhum lançamento com esse filtro.':'Nenhuma hora lançada em '+periodLabel(S.period)+'.';
-    el.innerHTML='<div class="vazio"><span class="ico">'+ic(todos.length?'search':'clock',20)+'</span><div>'+esc(msg)+'</div>'+
+    el.innerHTML='<div class="vazio">'+(todos.length?'<span class="ico">'+ic('search',20)+'</span>':'<img class="poke-vazio" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/143.gif" alt="" title="Zzz…" onerror="this.remove()">')+'<div>'+esc(msg)+'</div>'+
       (!todos.length&&canWrite()&&!isLocked(S.period)?'<button class="btn btn-primary btn-sm" data-a="novo">'+ic('plus',14)+'Lançar horas</button>':'')+'</div>';
   }else{
     const porDia={};list.forEach(e=>(porDia[e.data]=porDia[e.data]||[]).push(e));
