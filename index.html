@@ -4,7 +4,8 @@
 <script>
 (function(){var t='sistema';try{t=localStorage.getItem('horasjtc.tema')||'sistema'}catch(e){}
 var d=t==='escuro'||(t==='sistema'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
-document.documentElement.setAttribute('data-theme',d?'dark':'light');})();
+document.documentElement.setAttribute('data-theme',d?'dark':'light');
+var f='preto';try{f=localStorage.getItem('horasjtc.fundo')||'preto'}catch(e){}document.documentElement.setAttribute('data-fundo',f);})();
 </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -771,6 +772,29 @@ mark{background:var(--accent);color:#fff;padding:0 1px}
 .meta-vazia:hover{color:var(--accent-text)}
 @media (max-width:640px){.busca-item{grid-template-columns:minmax(0,1fr) auto}.bi-data{grid-column:1/-1}#btnTema{display:none}}
 
+/* ── Fundo escolhido em Configuração (cada um no seu navegador). Só troca a cor do xadrez/fundo. ── */
+[data-theme="dark"][data-fundo="preto"]{--bg:#09090a;--chk:#1c1c22}
+[data-theme="light"][data-fundo="preto"]{--bg:#e8e2cf;--chk:#d2c9ad}
+[data-theme="dark"][data-fundo="vinho"]{--bg:#1c0a0d;--chk:#30111a}
+[data-theme="light"][data-fundo="vinho"]{--bg:#efdcd9;--chk:#e2c4c0}
+[data-theme="dark"][data-fundo="indigo"]{--bg:#11152a;--chk:#1c2347}
+[data-theme="light"][data-fundo="indigo"]{--bg:#dde2f0;--chk:#c8d0e8}
+[data-theme="dark"][data-fundo="roxo"]{--bg:#170e26;--chk:#271841}
+[data-theme="light"][data-fundo="roxo"]{--bg:#e6def0;--chk:#d5c7ea}
+[data-theme="dark"][data-fundo="verde"]{--bg:#0e1a12;--chk:#183220}
+[data-theme="light"][data-fundo="verde"]{--bg:#dde6c8;--chk:#c8d6a6}
+[data-theme="dark"][data-fundo="oceano"]{--bg:#071a20;--chk:#0e2c36}
+[data-theme="light"][data-fundo="oceano"]{--bg:#d8ecee;--chk:#bfdfe4}
+[data-theme="dark"][data-fundo="ambar"]{--bg:#1c1007;--chk:#33200d}
+[data-theme="light"][data-fundo="ambar"]{--bg:#f1e2c9;--chk:#e5cda4}
+.fundos{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:10px;margin-top:1rem}
+.fundo-op{display:flex;flex-direction:column;gap:0;text-align:left;border:2px solid var(--border-strong);background:var(--surface);box-shadow:3px 3px 0 var(--ink);transition:transform .08s steps(1)}
+.fundo-op:hover{border-color:var(--accent);transform:translate(1px,1px)}
+.fundo-op.on{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:2px}
+.fundo-xad{height:64px;background-size:16px 16px;border-bottom:2px solid var(--border-strong);position:relative}
+.fundo-op span{padding:.45rem .6rem;font-family:var(--f-title);font-size:.82rem;letter-spacing:.02em;display:flex;align-items:center;gap:.35rem}
+.fundo-op.on span::before{content:'▶';color:var(--accent);font-size:.65rem;animation:piscar 1s steps(1) infinite}
+
 /* ── Pokémon nos cantos (sprites animados de Black/White, carregados do PokeAPI) ── */
 .poke-canto{margin-top:auto;display:flex;justify-content:center;align-items:flex-end;padding:.6rem 0 .2rem;position:relative}
 .poke-canto img{width:auto;height:84px;image-rendering:pixelated;filter:drop-shadow(3px 3px 0 rgba(0,0,0,.45));animation:flutuar 2.4s steps(4) infinite}
@@ -972,7 +996,9 @@ mark{background:var(--accent);color:#fff;padding:0 1px}
         </section>
         <section class="frame">
           <div class="frame-head"><div class="frame-titulo"><span data-ic="sun"></span>Aparência <small>· só neste navegador</small></div></div>
-          <div class="frame-corpo"><div class="cfg-linha"><p>Tema da tela</p><div class="seg" id="segTema"><button data-t="sistema">Automático</button><button data-t="claro">Claro</button><button data-t="escuro">Escuro</button></div></div></div>
+          <div class="frame-corpo"><div class="cfg-linha"><p>Tema da tela</p><div class="seg" id="segTema"><button data-t="sistema">Automático</button><button data-t="claro">Claro</button><button data-t="escuro">Escuro</button></div></div>
+            <div class="cfg-linha" style="margin-top:1.1rem"><p>Fundo quadriculado<small style="font-family:var(--f-body)">Clique para trocar na hora.</small></p></div>
+            <div class="fundos" id="fundos"></div></div>
         </section>
       </section>
     </main>
@@ -1108,7 +1134,20 @@ function aplicarTema(t){
   document.documentElement.dataset.theme=escuro?'dark':'light';
   $('#btnTema').innerHTML=ic(escuro?'sun':'moon',17);
   $$('#segTema button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  if(typeof renderFundos==='function'&&$('#fundos'))renderFundos();
 }
+/* Fundo quadriculado: 7 opções, salvo neste navegador. */
+const FUNDOS=[{"id": "preto", "nome": "Preto clássico", "e": ["#09090a", "#1c1c22"], "c": ["#e8e2cf", "#d2c9ad"]}, {"id": "vinho", "nome": "Vinho Pokédex", "e": ["#1c0a0d", "#30111a"], "c": ["#efdcd9", "#e2c4c0"]}, {"id": "indigo", "nome": "Noite índigo", "e": ["#11152a", "#1c2347"], "c": ["#dde2f0", "#c8d0e8"]}, {"id": "roxo", "nome": "Roxo Gengar", "e": ["#170e26", "#271841"], "c": ["#e6def0", "#d5c7ea"]}, {"id": "verde", "nome": "Verde Game Boy", "e": ["#0e1a12", "#183220"], "c": ["#dde6c8", "#c8d6a6"]}, {"id": "oceano", "nome": "Oceano Squirtle", "e": ["#071a20", "#0e2c36"], "c": ["#d8ecee", "#bfdfe4"]}, {"id": "ambar", "nome": "Âmbar Charizard", "e": ["#1c1007", "#33200d"], "c": ["#f1e2c9", "#e5cda4"]}];
+const LS_FUNDO='horasjtc.fundo';
+function fundoAtual(){try{return localStorage.getItem(LS_FUNDO)||'preto';}catch(e){return 'preto';}}
+function renderFundos(){
+  const el=$('#fundos');if(!el)return;const atual=fundoAtual(),esc_=document.documentElement.dataset.theme==='dark';
+  el.innerHTML=FUNDOS.map(f=>{const [bg,ch]=esc_?f.e:f.c;
+    return '<button type="button" class="fundo-op'+(f.id===atual?' on':'')+'" data-fundo="'+f.id+'" aria-pressed="'+(f.id===atual)+'"><div class="fundo-xad" style="background-color:'+bg+';background-image:conic-gradient('+ch+' 25%,transparent 0 50%,'+ch+' 0 75%,transparent 0)"></div><span>'+f.nome+'</span></button>';}).join('');
+}
+$('#fundos').addEventListener('click',ev=>{const b=ev.target.closest('[data-fundo]');if(!b)return;
+  try{localStorage.setItem(LS_FUNDO,b.dataset.fundo);}catch(e){}document.documentElement.dataset.fundo=b.dataset.fundo;renderFundos();
+  toast('Fundo: '+FUNDOS.find(f=>f.id===b.dataset.fundo).nome,'check');});
 $('#btnTema').addEventListener('click',()=>aplicarTema(document.documentElement.dataset.theme==='dark'?'claro':'escuro'));
 $('#segTema').addEventListener('click',ev=>{const b=ev.target.closest('[data-t]');if(b)aplicarTema(b.dataset.t);});
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(temaSalvo()==='sistema')aplicarTema('sistema');});
